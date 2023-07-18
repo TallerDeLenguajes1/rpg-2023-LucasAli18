@@ -1,0 +1,9 @@
+{
+  "CantidadSoldados": 0,
+  "Nombre": "Agustin",
+  "Paises": [
+    "Venezuela"
+  ],
+  "CondicionParaGanar": 1,
+  "Turno": 2
+}

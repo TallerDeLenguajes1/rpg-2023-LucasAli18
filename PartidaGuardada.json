@@ -1,0 +1,131 @@
+[
+  {
+    "Nombre": "Argentina",
+    "PaisesLimitrofes": [
+      "Bolivia",
+      "Brasil",
+      "Chile",
+      "Paraguay",
+      "Uruguay"
+    ],
+    "Soldados": 0,
+    "duenio": null
+  },
+  {
+    "Nombre": "Brasil",
+    "PaisesLimitrofes": [
+      "Argentina",
+      "Bolivia",
+      "Colombia",
+      "Guyana",
+      "Paraguay",
+      "Peru",
+      "Surinam",
+      "Uruguay",
+      "Venezuela"
+    ],
+    "Soldados": 3,
+    "duenio": "Lucas"
+  },
+  {
+    "Nombre": "Surinam",
+    "PaisesLimitrofes": [
+      "Brasil",
+      "Guyana"
+    ],
+    "Soldados": 1,
+    "duenio": "Lucas"
+  },
+  {
+    "Nombre": "Chile",
+    "PaisesLimitrofes": [
+      "Argentina",
+      "Bolivia",
+      "Peru"
+    ],
+    "Soldados": 0,
+    "duenio": null
+  },
+  {
+    "Nombre": "Ecuador",
+    "PaisesLimitrofes": [
+      "Colombia",
+      "Peru"
+    ],
+    "Soldados": 0,
+    "duenio": null
+  },
+  {
+    "Nombre": "Bolivia",
+    "PaisesLimitrofes": [
+      "Argentina",
+      "Brasil",
+      "Chile",
+      "Paraguay",
+      "Peru"
+    ],
+    "Soldados": 0,
+    "duenio": null
+  },
+  {
+    "Nombre": "Guyana",
+    "PaisesLimitrofes": [
+      "Brasil",
+      "Surinam",
+      "Venezuela"
+    ],
+    "Soldados": 0,
+    "duenio": null
+  },
+  {
+    "Nombre": "Peru",
+    "PaisesLimitrofes": [
+      "Bolivia",
+      "Brasil",
+      "Chile",
+      "Colombia",
+      "Ecuador"
+    ],
+    "Soldados": 0,
+    "duenio": null
+  },
+  {
+    "Nombre": "Colombia",
+    "PaisesLimitrofes": [
+      "Brasil",
+      "Ecuador",
+      "Venezuela",
+      "Peru"
+    ],
+    "Soldados": 0,
+    "duenio": null
+  },
+  {
+    "Nombre": "Paraguay",
+    "PaisesLimitrofes": [
+      "Argentina",
+      "Bolivia",
+      "Brasil"
+    ],
+    "Soldados": 0,
+    "duenio": null
+  },
+  {
+    "Nombre": "Uruguay",
+    "PaisesLimitrofes": [
+      "Argentina",
+      "Brasil"
+    ],
+    "Soldados": 0,
+    "duenio": null
+  },
+  {
+    "Nombre": "Venezuela",
+    "PaisesLimitrofes": [
+      "Brasil",
+      "Guyana"
+    ],
+    "Soldados": 3,
+    "duenio": "Agustin"
+  }
+]

@@ -1,43 +1,48 @@
+using Limites;
 namespace Personajes
 {
 
     public class Personaje
     {   
         //DATOS DEL PERSONAJE
+        private int turno;
+        private int cantidadSoldados;
         private string? nombre;
-        private string? tipo;
-        private string? apodo;
-        private int edad;
-        private DateTime fdn;
+        private List<string>? paises;
+        private int condicionParaGanar;
 
-        //CARACTERISTICAS DEL PERSONAJE
-        private int velocidad;
-        private int destreza;
-        private int fuerza;
-        private int nivel;
-        private int armadura;
-        private int salud;
-
-        //METODOS PARA LOS DATOS
+        public int CantidadSoldados { get => cantidadSoldados; set => cantidadSoldados = value; }
         public string? Nombre { get => nombre; set => nombre = value; }
-        public string? Tipo { get => tipo; set => tipo = value; }
-        public string? Apodo { get => apodo; set => apodo = value; }
-        public int Edad { get => edad; set => edad = value; }
-        public DateTime Fdn { get => fdn; set => fdn = value; }
+        public List<string>? Paises { get => paises; set => paises = value; }
+        public int CondicionParaGanar { get => condicionParaGanar; set => condicionParaGanar = value; }
+        public int Turno { get => turno; set => turno = value; }
 
-        //METODOS PARA LAS CARACTERISTICAS
-        public int Velocidad { get => velocidad; set => velocidad = value; }
-        public int Destreza { get => destreza; set => destreza = value; }
-        public int Fuerza { get => fuerza; set => fuerza = value; }
-        public int Nivel { get => nivel; set => nivel = value; }
-        public int Armadura { get => armadura; set => armadura = value; }
-        public int Salud { get => salud; set => salud = 100; }
+        public Personaje(string nombre)
+        {
+            Nombre=nombre;
+            Paises = new List<string>();
+        }
 
-    }
-
-
-
-
-
+        public Personaje GenerarVillano()
+        {
+            string[] nombres = {"Juan","Leandro","Agustin"};
+            Random al = new Random();
+            Personaje villano = new Personaje("");
+            villano.Nombre=nombres[al.Next(0,nombres.Count())];
+            villano.cantidadSoldados=11;
+            villano.condicionParaGanar=0;
+            villano.turno=0;
+            return villano;
+        } 
+        public void AgregarPais(string pais)
+            {
+                Paises.Add(pais);
+            }
+            public void BorrarPais(string pais)
+            {
+                Paises.Remove(pais);
+            }
+    
+    } 
 
 }
