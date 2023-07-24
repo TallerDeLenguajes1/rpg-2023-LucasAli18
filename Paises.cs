@@ -6,6 +6,7 @@ namespace Limites
 
 public class Pais
 {
+    public int Id { get; set;}
     public string Nombre { get; set; }
     public List<string> PaisesLimitrofes { get; set; }
     public int Soldados{get; set;}
@@ -137,6 +138,13 @@ public class Pais
                 Paises.Add(paraguay);
                 Paises.Add(uruguay);
                 Paises.Add(venezuela);
+                //CARGA DE ID
+                int id=1;
+                foreach (var pais in Paises)
+                {
+                    pais.Id=id;
+                    id++;
+                }
                 //RETORNO LA LISTA
                 return Paises;
             }

@@ -3,7 +3,7 @@ using Mecanicas;
 using Limites;
 using PartidaJSON;
 
-        //UN ARREGLO DE LOS PAISES QUE UTILIZAREMOS
+        //UN ARREGLO DE LOS PAISES DISPONIBLES
         List<string> paisesLibres=new List<string>{"Argentina","Brasil","Chile","Paraguay","Peru","Uruguay","Bolivia","Ecuador","Guyana","Colombia","Venezuela"};
         List<string> paisesOcupados=new List<string>();
         List<Pais> Paises = new List<Pais>();
@@ -14,7 +14,6 @@ using PartidaJSON;
         PersonajesJson PJguardado = new PersonajesJson();
         generadorPais generadorPaises = new generadorPais();
         Paises = generadorPaises.GenerarPaises();
-        string? paisSeleccionado;
         //EL MENU DEL JUEGO
         bool salir = false;
         while (!salir)
@@ -28,7 +27,8 @@ using PartidaJSON;
             Console.WriteLine("╚══════════════════════════╝");
 
             Console.Write("Ingrese el número de opción: ");
-            string opcion = Console.ReadLine();
+            string? opcion = Console.ReadLine();
+
 
             switch (opcion)
             {
@@ -60,6 +60,18 @@ using PartidaJSON;
                                     jugar.TurnoRival(villano,player, Paises);
                                 }
                                 Console.WriteLine("¡FIN DEL TURNO DEL RIVAL!");
+                                if (player.Paises.Count()==0)
+                                {
+                                    Console.WriteLine("El villano logro eliminar todas tus tropas");                                    
+                                    Console.WriteLine("Perdiste esta vez, juega de nuevo para lograr la conquista");                                    
+                                    break;
+                                }
+                                if (villano.Paises.Count()==0)
+                                {
+                                    Console.WriteLine("Lograste eliminar todas las tropas del villano");                                    
+                                    Console.WriteLine("Ganaste la partida!");                                    
+                                    break;
+                                }
                                 jugar.FindelTurno(player,villano,Paises);
 
                             }

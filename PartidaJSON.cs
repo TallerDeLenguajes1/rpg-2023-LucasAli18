@@ -61,7 +61,7 @@ namespace PartidaJSON
                 json = reader.ReadToEnd();
             }
             // Deserializar el contenido JSON a una lista de clientes
-            cargar = JsonSerializer.Deserialize<Personaje>(json);
+            cargar = JsonSerializer.Deserialize<Personaje>(json)!;
             if (cargar!=null)
             {
                 devolver = cargar;
@@ -91,7 +91,7 @@ namespace PartidaJSON
                 json = reader.ReadToEnd();
             }
             // Deserializar el contenido JSON a una lista de clientes
-            cargar = JsonSerializer.Deserialize<Personaje>(json);
+            cargar = JsonSerializer.Deserialize<Personaje>(json)!;
             if (cargar!=null)
             {
                 devolver = cargar;
@@ -145,7 +145,7 @@ namespace PartidaJSON
                 json = reader.ReadToEnd();
             }
             // Deserializar el contenido JSON a una lista de clientes
-            List<Pais> Paises = JsonSerializer.Deserialize<List<Pais>>(json);
+            List<Pais> Paises = JsonSerializer.Deserialize<List<Pais>>(json)!;
             if (Paises!=null)
             {
                 Guardado = Paises;
