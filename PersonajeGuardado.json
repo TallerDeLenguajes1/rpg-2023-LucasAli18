@@ -2,9 +2,8 @@
   "CantidadSoldados": 0,
   "Nombre": "Lucas",
   "Paises": [
-    "Brasil",
-    "Surinam"
+    "Brasil"
   ],
-  "CondicionParaGanar": 2,
+  "CondicionParaGanar": 1,
   "Turno": 1
 }

@@ -85,11 +85,11 @@ namespace Mecanicas
                 switch (input)
                 {
                     case "1":
-
+                            //ELEGIR PAIS DE COMIENZO PERSONAJE Y VILLANO
                             if (P.Turno==0)
                             {
                                 string? paisSeleccionado;
-                                paisSeleccionado=ElegirPais(P,Paises);
+                                paisSeleccionado=ElegirPais(Paises);
                                 P.Turno++;
                                 if (paisSeleccionado!=null)
                                 {
@@ -129,7 +129,7 @@ namespace Mecanicas
 
                         break;
                     case "2":
-                                if (V.Turno==0)
+                                if (P.Turno==0)
                                 {
                                     Console.WriteLine("No elegiste el pais de inicio");
                                 }else
@@ -138,28 +138,37 @@ namespace Mecanicas
                                 }
                         break;
                     case "3":
-                                if (V.Turno==0)
+                                PartidaGuardada guardado = new PartidaGuardada();
+                                PersonajesJson PJguardado = new PersonajesJson();
+                                if (P.Turno==0)
                                     {
                                         Console.WriteLine("No elegiste el pais de inicio");
                                     }else
                                     {
+                                        if (V.Turno==P.Turno)
+                                        {
+                                            PJguardado.GuardarPersonaje(P);
+                                            PJguardado.GuardarVillano(V);
+                                            guardado.GuardarPartida(Paises);
+                                            Console.WriteLine("¡PARTIDA GUARDADA!");
+                                        }else
+                                        {
                                         Console.WriteLine("Para evitar la ventaja contra el villano, debe realizar el ultimo ataque");
                                         AtaqueVillano(P,V,Paises);
                                         Console.WriteLine("Y cargar los soldados que desea");
                                         FindelTurno(P,V,Paises);
-                                        PartidaGuardada guardado = new PartidaGuardada();
-                                        PersonajesJson PJguardado = new PersonajesJson();
                                         PJguardado.GuardarPersonaje(P);
                                         PJguardado.GuardarVillano(V);
                                         guardado.GuardarPartida(Paises);
                                         Console.WriteLine("¡PARTIDA GUARDADA!");
+                                        }
                                         P.CantidadSoldados=100;
                                         exit=true;
                                     }
                                 
                         break;
                     case "4":
-                                if (V.Turno==0)
+                                if (P.Turno==0)
                                     {
                                         Console.WriteLine("No elegiste el pais de inicio");
                                     }else
@@ -251,6 +260,7 @@ namespace Mecanicas
             {
                 while (V.CantidadSoldados!=0)
                 {
+                    rand = num.Next(0,12);
                     while (Paises[rand].duenio!=V.Nombre)
                     {
                         rand = num.Next(0,12);
@@ -296,7 +306,7 @@ namespace Mecanicas
             }
             Console.WriteLine();
         }
-        Console.WriteLine("AHORA LOS PAISES: ");
+        Console.WriteLine("AHORA LOS PAISES ENEMIGOS: ");
         Console.WriteLine();
         foreach (var pais in V.Paises)
         {
@@ -314,7 +324,7 @@ namespace Mecanicas
             Console.WriteLine("Si la pregunta se repite significa que el pais no es de su propiedad o no posee soldados suficientes");
             Console.WriteLine("Elegir el pais desde el cual desea atacar");
             //paisAtaque=Console.ReadLine()!;
-            paisAtaque=ElegirPais(P,Paises);
+            paisAtaque=ElegirPais(Paises);
             if (Paises.Find(pais=>pais.Nombre==paisAtaque)!.duenio==P.Nombre && Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados<1)
             {
                 Console.WriteLine("No posee soldados suficientes para un ataque");
@@ -332,7 +342,8 @@ namespace Mecanicas
         {
             Console.WriteLine("Si la pregunta se repite significa que el pais no es limite de sus propiedades");
             Console.WriteLine("Elegir el pais al cual desea atacar");
-            paisDefensa=Console.ReadLine()!;
+            //paisDefensa=Console.ReadLine()!;
+            paisDefensa=ElegirPais(Paises);
         } while (!Paises[Paises.FindIndex(p=>p.Nombre==paisAtaque)].PaisesLimitrofes.Contains(paisDefensa));
 
         int cantidadSoldadosPaisAtaque=Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados;
@@ -369,7 +380,7 @@ namespace Mecanicas
                 while (Paises.Find(pais=>pais.Nombre==paisDefensa)!.duenio!=V.Nombre)
                 {
                     Console.WriteLine("El pais que elegiste es tuyo, selecciona otro");
-                    paisDefensa=Console.ReadLine()!;
+                    paisDefensa=ElegirPais(Paises);
                 }   
             }
             Console.WriteLine(paisDefensa+" pais de "+V.Nombre+" tiene "+Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados+" soldados");
@@ -862,7 +873,6 @@ namespace Mecanicas
     {
             Random num = new Random();
             int rand, lim;
-            V.Turno++;
             //PRIMERO SELECCIONA UN PAIS DESDE EL CUAL ATACA
             rand = num.Next(0,12);
             //FALTA LA OPCION CUANDO NO TENGA PAIS CON MAS DE 1 SOLDADO
@@ -1390,7 +1400,7 @@ namespace Mecanicas
         
     }
 }
-    public string ElegirPais(Personaje P,List<Pais> Paises)
+    public string ElegirPais(List<Pais> Paises)
         {
             int sel=0;
             string? input;
@@ -1427,6 +1437,8 @@ namespace Mecanicas
         {
             villano++;
         }
+        P.Turno++;
+        V.Turno++;
         P.CantidadSoldados=player;
         V.CantidadSoldados=villano;
         Console.WriteLine("A "+P.Nombre+" se le agrego "+player+" soldados.");

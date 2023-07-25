@@ -1,5 +1,6 @@
 [
   {
+    "Id": 1,
     "Nombre": "Argentina",
     "PaisesLimitrofes": [
       "Bolivia",
@@ -12,6 +13,7 @@
     "duenio": null
   },
   {
+    "Id": 2,
     "Nombre": "Brasil",
     "PaisesLimitrofes": [
       "Argentina",
@@ -24,19 +26,21 @@
       "Uruguay",
       "Venezuela"
     ],
-    "Soldados": 3,
+    "Soldados": 4,
     "duenio": "Lucas"
   },
   {
+    "Id": 3,
     "Nombre": "Surinam",
     "PaisesLimitrofes": [
       "Brasil",
       "Guyana"
     ],
-    "Soldados": 1,
-    "duenio": "Lucas"
+    "Soldados": 0,
+    "duenio": null
   },
   {
+    "Id": 4,
     "Nombre": "Chile",
     "PaisesLimitrofes": [
       "Argentina",
@@ -47,6 +51,7 @@
     "duenio": null
   },
   {
+    "Id": 5,
     "Nombre": "Ecuador",
     "PaisesLimitrofes": [
       "Colombia",
@@ -56,6 +61,7 @@
     "duenio": null
   },
   {
+    "Id": 6,
     "Nombre": "Bolivia",
     "PaisesLimitrofes": [
       "Argentina",
@@ -64,10 +70,11 @@
       "Paraguay",
       "Peru"
     ],
-    "Soldados": 0,
-    "duenio": null
+    "Soldados": 1,
+    "duenio": "Agustin"
   },
   {
+    "Id": 7,
     "Nombre": "Guyana",
     "PaisesLimitrofes": [
       "Brasil",
@@ -78,6 +85,7 @@
     "duenio": null
   },
   {
+    "Id": 8,
     "Nombre": "Peru",
     "PaisesLimitrofes": [
       "Bolivia",
@@ -86,10 +94,11 @@
       "Colombia",
       "Ecuador"
     ],
-    "Soldados": 0,
-    "duenio": null
+    "Soldados": 4,
+    "duenio": "Agustin"
   },
   {
+    "Id": 9,
     "Nombre": "Colombia",
     "PaisesLimitrofes": [
       "Brasil",
@@ -101,6 +110,7 @@
     "duenio": null
   },
   {
+    "Id": 10,
     "Nombre": "Paraguay",
     "PaisesLimitrofes": [
       "Argentina",
@@ -111,6 +121,7 @@
     "duenio": null
   },
   {
+    "Id": 11,
     "Nombre": "Uruguay",
     "PaisesLimitrofes": [
       "Argentina",
@@ -120,12 +131,13 @@
     "duenio": null
   },
   {
+    "Id": 12,
     "Nombre": "Venezuela",
     "PaisesLimitrofes": [
       "Brasil",
       "Guyana"
     ],
-    "Soldados": 3,
-    "duenio": "Agustin"
+    "Soldados": 0,
+    "duenio": null
   }
 ]
