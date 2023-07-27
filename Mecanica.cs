@@ -247,15 +247,11 @@ namespace Mecanicas
 
     public void Ataque(Personaje P,Personaje V, List<Pais> Paises, List<ApiClima.Clima> Climas)
     {
-        int atacar;
         if (P.CondicionParaGanar==12)
         {
             return;
         }
-        Console.WriteLine("Desea atacar?");
-        Console.WriteLine("1.Si 2.No");
-        int.TryParse(Console.ReadLine(),out atacar);
-        if (atacar == 2)
+        if (Decision() == 2)
         {
             Console.WriteLine("Termino tu ataque");
         }else
@@ -320,10 +316,29 @@ namespace Mecanicas
                 int opcion;
                 while (P.Paises.Contains(paisDefensa))
                 {
-                    Console.WriteLine("El pais que elegiste es tuyo, selecciona otro");
-                    Console.WriteLine("Tienes mas paises para atacar desde este pais?");
-                    Console.WriteLine("1.SI 2.NO");
-                    int.TryParse(Console.ReadLine(),out opcion);
+                    do
+                    {
+                        Console.WriteLine("El pais que elegiste es tuyo, selecciona otro");
+                        Console.WriteLine("Tienes mas paises para atacar desde este pais?");
+                        Console.WriteLine("1. Si 2.No");
+
+                        if (int.TryParse(Console.ReadLine(), out opcion))
+                        {
+                            if (opcion == 1 || opcion == 2)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                Console.WriteLine("Respuesta incorrecta. Por favor, ingrese 1 o 2.");
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Respuesta no aceptada. No se aceptan caracteres, ingrese un número.");
+                        }
+
+                    } while (true);
                     if (opcion==2)
                     {
                         return;
@@ -383,52 +398,77 @@ namespace Mecanicas
             P.CondicionParaGanar++;
             Console.WriteLine("--------------------------------------------------------------");
         }else
-        {
+                {
                     //VERIFICO SI EL PAIS ELEGIDO ES MIO O NO
-  
-                    int eleccion,verificarTemp;
+
+                    int eleccion, verificarTemp;
                     //VERIFICO LA TEMPERATURA
-                    verificarTemp=VerificarTemperatura(paisDefensa,Paises,Climas);
-                    
-                    if (verificarTemp==0)
+                    verificarTemp = VerificarTemperatura(paisDefensa, Paises, Climas);
+
+                    if (verificarTemp == 0)
                     {
-                        if (Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados>2)
+                        if (Paises.Find(pais => pais.Nombre == paisAtaque)!.Soldados > 2)
                         {
                             Console.WriteLine("El ataque es en un pais helado, perderas un soldado en el camino deseas continuar?");
                             Console.WriteLine("Deseas seguir?");
                             Console.WriteLine("1.SI 2.NO");
-                            int.TryParse(Console.ReadLine(),out eleccion);
-                            if (eleccion==1)
+                            int.TryParse(Console.ReadLine(), out eleccion);
+                            if (eleccion == 1)
                             {
                                 Console.WriteLine("Haz elegido continuar se perdio un soldado pero el ataque continua");
-                                Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
-                                Console.WriteLine(paisDefensa+" pais de "+V.Nombre+" tiene "+Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados+" soldados");
-                                Console.WriteLine(paisAtaque+" pais de "+P.Nombre+" tiene "+Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados+" soldados");
+                                Paises.Find(pais => pais.Nombre == paisAtaque)!.Soldados -= 1;
+                                Console.WriteLine(paisDefensa + " pais de " + V.Nombre + " tiene " + Paises.Find(pais => pais.Nombre == paisDefensa)!.Soldados + " soldados");
+                                Console.WriteLine(paisAtaque + " pais de " + P.Nombre + " tiene " + Paises.Find(pais => pais.Nombre == paisAtaque)!.Soldados + " soldados");
                                 AtaqueDados(P, V, Paises, paisAtaque, paisDefensa);
                                 return;
-                            }else{return;}
-                        }else
+                            }
+                            else { return; }
+                        }
+                        else
                         {
                             Console.WriteLine("No posees los soldados suficientes para atacar un pais helado");
                             return;
                         }
-                    }   
+                    }
 
-            
-            Console.WriteLine(paisAtaque+" pais de "+P.Nombre+" tiene "+(Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-1)+" soldados");
-            Console.WriteLine(paisDefensa+" pais de "+V.Nombre+" tiene "+Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados+" soldados");
-            Console.WriteLine("Desea atacar?");
-            Console.WriteLine("1.Si 2.No");
-            int opcion;
-            int.TryParse(Console.ReadLine(),out opcion);
-                    if (opcion == 1){
+
+                    Console.WriteLine(paisAtaque + " pais de " + P.Nombre + " tiene " + (Paises.Find(pais => pais.Nombre == paisAtaque)!.Soldados) + " soldados");
+                    Console.WriteLine(paisDefensa + " pais de " + V.Nombre + " tiene " + Paises.Find(pais => pais.Nombre == paisDefensa)!.Soldados + " soldados");
+                    if (Decision() == 1)
+                    {
                         AtaqueDados(P, V, Paises, paisAtaque, paisDefensa);
-                        }
-        }
-        }
+                    }
+                }
+            }
     }
 
-    private static void AtaqueDados(Personaje P, Personaje V, List<Pais> Paises, string paisAtaque, string paisDefensa)
+        private static int Decision()
+        {
+            int opcion;
+            do
+            {
+                Console.WriteLine("Desea atacar?");
+                Console.WriteLine("1. Si 2.No");
+                if (int.TryParse(Console.ReadLine(), out opcion))
+                {
+                    if (opcion == 1 || opcion == 2)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Respuesta incorrecta. Por favor, ingrese 1 o 2.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Respuesta incorrecta. No se admiten letras, ingrese un número.");
+                }
+            } while (true);
+            return opcion;
+        }
+
+        private static void AtaqueDados(Personaje P, Personaje V, List<Pais> Paises, string paisAtaque, string paisDefensa)
         {
             Random dado = new Random();
             int dadoAtaque1, dadoAtaque2, dadoAtaque3, dadoDefensa1, dadoDefensa2, dadoDefensa3;
