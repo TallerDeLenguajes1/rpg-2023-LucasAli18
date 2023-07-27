@@ -526,7 +526,7 @@ namespace Mecanicas
                     }
                     else if (dadoAtaque2 > dadoDefensa3)
                     {
-                        Console.WriteLine("El defensor atacante perdio la ronda 1, comenzamos con la segunda");
+                        Console.WriteLine("El dado atacante perdio la ronda 1, comenzamos con la segunda");
                         Console.WriteLine("RONDA NUMERO 2");
                         Console.WriteLine("El dado del defensor es: " + dadoDefensa3);
                         Console.WriteLine("El segundo dado del atacante es....");
@@ -536,12 +536,12 @@ namespace Mecanicas
                     }
                     else if (dadoAtaque3 > dadoDefensa3)
                     {
-                        Console.WriteLine("El defensor atacante perdio la ronda 1 y 2, ahora se define");
+                        Console.WriteLine("El dado atacante perdio la ronda 1 y 2, ahora se define");
                         Console.WriteLine("RONDA NUMERO 3");
                         Console.WriteLine("El dado del defensor es: " + dadoDefensa3);
                         Console.WriteLine("El tercer dado es....");
                         GiroDelDado(dado);
-                        Console.WriteLine(dadoAtaque2);
+                        Console.WriteLine(dadoAtaque3);
                         Paises.Find(pais => pais.Nombre == paisDefensa)!.Soldados -= 1;
                     }
                     else
@@ -657,10 +657,9 @@ namespace Mecanicas
                     }
                     else if (dadoAtaque3 > dadoDefensa3)
                     {
-                        Console.WriteLine("El segundo dado es....");
+                        Console.WriteLine("El dado atacante es....");
                         GiroDelDado(dado);
                         Console.WriteLine(dadoAtaque3);
-                        Paises.Find(pais => pais.Nombre == paisAtaque)!.Soldados -= 1;
                         Paises.Find(pais => pais.Nombre == paisDefensa)!.Soldados -= 1;
                     }
                     else
@@ -714,6 +713,7 @@ namespace Mecanicas
                     Console.WriteLine("El valor del dado atacante es....");
                     GiroDelDado(dado);
                     Console.WriteLine(dadoAtaque3);
+                    Console.WriteLine("COMENZAMOS CON LA DEFENSA DE " + V.Nombre!.ToUpper());
                     for (int i = 0; i < 2; i++)
                     {
                         Console.WriteLine("El valor del dado defensor es....");
@@ -738,6 +738,7 @@ namespace Mecanicas
                     Console.WriteLine("El valor del dado atacante es....");
                     GiroDelDado(dado);
                     Console.WriteLine(dadoAtaque3);
+                    Console.WriteLine("COMENZAMOS CON LA DEFENSA DE " + V.Nombre!.ToUpper());
                     Console.WriteLine("Y el dado defensor es....");
                     GiroDelDado(dado);
                     Console.WriteLine(dadoDefensa3);
@@ -766,7 +767,6 @@ namespace Mecanicas
                             return;
                         }else if (Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados==1)
                         {
-                            Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados=1;
                             Console.WriteLine("El pais atacante perdio la guerra.");
                             Console.WriteLine(P.Nombre!.ToUpper()+" HA PERDIDO LA GUERRA");
                             return;

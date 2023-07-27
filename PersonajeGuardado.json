@@ -5,15 +5,15 @@
     "Brasil",
     "Argentina",
     "Surinam",
-    "Chile",
-    "Venezuela",
     "Guyana",
-    "Peru",
     "Colombia",
-    "Bolivia",
+    "Ecuador",
+    "Venezuela",
     "Uruguay",
-    "Ecuador"
+    "Paraguay",
+    "Bolivia",
+    "Chile"
   ],
   "CondicionParaGanar": 11,
-  "Turno": 3
+  "Turno": 8
 }

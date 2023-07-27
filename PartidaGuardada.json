@@ -9,7 +9,7 @@
       "Paraguay",
       "Uruguay"
     ],
-    "Soldados": 1,
+    "Soldados": 8,
     "Capital": "Buenos Aires",
     "duenio": "Lucas"
   },
@@ -27,7 +27,7 @@
       "Uruguay",
       "Venezuela"
     ],
-    "Soldados": 8,
+    "Soldados": 18,
     "Capital": "Bras\u00EDlia",
     "duenio": "Lucas"
   },
@@ -101,9 +101,9 @@
       "Colombia",
       "Ecuador"
     ],
-    "Soldados": 1,
+    "Soldados": 2,
     "Capital": "Lima",
-    "duenio": "Lucas"
+    "duenio": "Leandro"
   },
   {
     "Id": 9,
@@ -114,7 +114,7 @@
       "Venezuela",
       "Peru"
     ],
-    "Soldados": 1,
+    "Soldados": 6,
     "Capital": "Bogot\u00E1",
     "duenio": "Lucas"
   },
@@ -126,9 +126,9 @@
       "Bolivia",
       "Brasil"
     ],
-    "Soldados": 1,
+    "Soldados": 2,
     "Capital": "Asunci\u00F3n",
-    "duenio": "Agustin"
+    "duenio": "Lucas"
   },
   {
     "Id": 11,

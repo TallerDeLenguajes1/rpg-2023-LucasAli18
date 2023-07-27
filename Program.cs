@@ -85,6 +85,7 @@ using API;
                         {
                             Console.WriteLine("Lograste eliminar todas las tropas del villano");
                             Console.WriteLine("Ganaste la partida!");
+                            Console.WriteLine("FELICIDADES " + player.Nombre!.ToUpper());
                             break;
                         }
                         jugar.FindelTurno(player, villano, Paises);

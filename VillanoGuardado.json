@@ -1,9 +1,9 @@
 {
   "CantidadSoldados": 0,
-  "Nombre": "Agustin",
+  "Nombre": "Leandro",
   "Paises": [
-    "Paraguay"
+    "Peru"
   ],
   "CondicionParaGanar": 1,
-  "Turno": 3
+  "Turno": 8
 }

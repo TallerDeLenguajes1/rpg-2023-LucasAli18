@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Lucas\\Desktop\\PRIMER CUATRIMESTRE 2023\\Taller de Lenguaje I\\TDL1-FINAL\\rpg-2023-LucasAli18\\rpg-2023-LucasAli18.csproj": {}
+    "C:\\Users\\Lucas\\Desktop\\Juego definitivo\\rpg-2023-LucasAli18\\rpg-2023-LucasAli18.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Lucas\\Desktop\\PRIMER CUATRIMESTRE 2023\\Taller de Lenguaje I\\TDL1-FINAL\\rpg-2023-LucasAli18\\rpg-2023-LucasAli18.csproj": {
+    "C:\\Users\\Lucas\\Desktop\\Juego definitivo\\rpg-2023-LucasAli18\\rpg-2023-LucasAli18.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Lucas\\Desktop\\PRIMER CUATRIMESTRE 2023\\Taller de Lenguaje I\\TDL1-FINAL\\rpg-2023-LucasAli18\\rpg-2023-LucasAli18.csproj",
+        "projectUniqueName": "C:\\Users\\Lucas\\Desktop\\Juego definitivo\\rpg-2023-LucasAli18\\rpg-2023-LucasAli18.csproj",
         "projectName": "rpg-2023-LucasAli18",
-        "projectPath": "C:\\Users\\Lucas\\Desktop\\PRIMER CUATRIMESTRE 2023\\Taller de Lenguaje I\\TDL1-FINAL\\rpg-2023-LucasAli18\\rpg-2023-LucasAli18.csproj",
+        "projectPath": "C:\\Users\\Lucas\\Desktop\\Juego definitivo\\rpg-2023-LucasAli18\\rpg-2023-LucasAli18.csproj",
         "packagesPath": "C:\\Users\\Lucas\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Lucas\\Desktop\\PRIMER CUATRIMESTRE 2023\\Taller de Lenguaje I\\TDL1-FINAL\\rpg-2023-LucasAli18\\obj\\",
+        "outputPath": "C:\\Users\\Lucas\\Desktop\\Juego definitivo\\rpg-2023-LucasAli18\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
