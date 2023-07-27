@@ -1,0 +1,62 @@
+[
+  {
+    "Ciudad": "Buenos Aires",
+    "Descripcion": "Niebla",
+    "Temperatura": 8
+  },
+  {
+    "Ciudad": "Bras\u00EDlia",
+    "Descripcion": "Cielo despejado",
+    "Temperatura": 12
+  },
+  {
+    "Ciudad": "Santiago",
+    "Descripcion": "Niebla",
+    "Temperatura": 5
+  },
+  {
+    "Ciudad": "Montevideo",
+    "Descripcion": "Nubes dispersas",
+    "Temperatura": 7
+  },
+  {
+    "Ciudad": "La Paz",
+    "Descripcion": "Poco nuboso",
+    "Temperatura": 3.3
+  },
+  {
+    "Ciudad": "Asunci\u00F3n",
+    "Descripcion": "Poco nuboso",
+    "Temperatura": 15
+  },
+  {
+    "Ciudad": "Bogot\u00E1",
+    "Descripcion": "Poco nuboso",
+    "Temperatura": 13
+  },
+  {
+    "Ciudad": "Paramaribo",
+    "Descripcion": "Cielo despejado",
+    "Temperatura": 25
+  },
+  {
+    "Ciudad": "George Town",
+    "Descripcion": "Cielo despejado",
+    "Temperatura": 32
+  },
+  {
+    "Ciudad": "Capito",
+    "Descripcion": "Poco nuboso",
+    "Temperatura": 21.9
+  },
+  {
+    "Ciudad": "Quito",
+    "Descripcion": "Cielo despejado",
+    "Temperatura": 13
+  },
+  {
+    "Ciudad": "Lima",
+    "Descripcion": "Cielo despejado",
+    "Temperatura": 18.3
+  }
+]

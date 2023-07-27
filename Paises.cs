@@ -10,17 +10,17 @@ public class Pais
     public string Nombre { get; set; }
     public List<string> PaisesLimitrofes { get; set; }
     public int Soldados{get; set;}
+    public string? Capital {get; set;}
     public string? duenio{get; set;}
-
     public void AgregarPaisLimitrofe(string pais)
     {
         PaisesLimitrofes.Add(pais);
     }
-
-    public Pais(string nombre, int soldados)
+    public Pais(string nombre, int soldados, string capital)
     {
         Nombre=nombre;
         Soldados=soldados;
+        Capital = capital;
         duenio = null;
         PaisesLimitrofes = new List<string>();
     }
@@ -44,30 +44,18 @@ public class Pais
 
                 List<Pais> Paises = new List<Pais>();
                 // Crear instancias de países
-                Pais argentina = new Pais("Argentina",0);
-                //argentina.Nombre="Argentina";
-                Pais bolivia = new Pais("Bolivia",0);
-                //bolivia.Nombre="Bolivia";
-                Pais brasil = new Pais("Brasil",0);
-                //brasil.Nombre="Brasil";
-                Pais chile = new Pais("Chile",0);
-                //chile.Nombre="Chile";
-                Pais colombia = new Pais("Colombia",0);
-                //colombia.Nombre="Colombia";
-                Pais ecuador = new Pais("Ecuador",0);
-                //ecuador.Nombre="Ecuador";
-                Pais guyana = new Pais("Guyana",0);
-                //guyana.Nombre="Guyana";
-                Pais paraguay = new Pais("Paraguay",0);
-                //paraguay.Nombre="Paraguay";
-                Pais peru = new Pais("Peru",0);
-                //peru.Nombre="Perú";
-                Pais surinam = new Pais("Surinam",0);
-                //surinam.Nombre = "Surinam";
-                Pais uruguay = new Pais("Uruguay",0);
-                //uruguay.Nombre="Uruguay";
-                Pais venezuela = new Pais("Venezuela",0);
-                //venezuela.Nombre="Venezuela";
+                Pais argentina = new Pais("Argentina",0,"Buenos Aires");
+                Pais bolivia = new Pais("Bolivia",0,"La Paz");
+                Pais brasil = new Pais("Brasil",0,"Brasília");
+                Pais chile = new Pais("Chile",0,"Santiago");
+                Pais colombia = new Pais("Colombia",0,"Bogotá");
+                Pais ecuador = new Pais("Ecuador",0,"Quito");
+                Pais guyana = new Pais("Guyana",0,"George Town");
+                Pais paraguay = new Pais("Paraguay",0,"Asunción");
+                Pais peru = new Pais("Peru",0,"Lima");
+                Pais surinam = new Pais("Surinam",0,"Paramaribo");
+                Pais uruguay = new Pais("Uruguay",0,"Montevideo");
+                Pais venezuela = new Pais("Venezuela",0,"Capito");
                 // Definir los países limítrofes de cada país
                 argentina.AgregarPaisLimitrofe(bolivia.Nombre);
                 argentina.AgregarPaisLimitrofe(brasil.Nombre);

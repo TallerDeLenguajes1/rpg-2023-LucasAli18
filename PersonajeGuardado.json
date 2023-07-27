@@ -2,8 +2,18 @@
   "CantidadSoldados": 0,
   "Nombre": "Lucas",
   "Paises": [
-    "Brasil"
+    "Brasil",
+    "Argentina",
+    "Surinam",
+    "Chile",
+    "Venezuela",
+    "Guyana",
+    "Peru",
+    "Colombia",
+    "Bolivia",
+    "Uruguay",
+    "Ecuador"
   ],
-  "CondicionParaGanar": 1,
-  "Turno": 1
+  "CondicionParaGanar": 11,
+  "Turno": 3
 }

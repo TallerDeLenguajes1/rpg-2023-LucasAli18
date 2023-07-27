@@ -49,8 +49,8 @@ namespace PartidaJSON
         }
         public Personaje CargarPersonaje()
         {
-            Personaje cargar = new Personaje("");
-            Personaje devolver = new Personaje("");
+            Personaje cargar = new Personaje();
+            Personaje devolver = new Personaje();
             string filePath = "PersonajeGuardado.json";
         try
         {
@@ -79,8 +79,8 @@ namespace PartidaJSON
         public Personaje CargarVillano()
         {
 
-            Personaje cargar = new Personaje("");
-            Personaje devolver = new Personaje("");
+            Personaje cargar = new Personaje();
+            Personaje devolver = new Personaje();
             string filePath = "VillanoGuardado.json";
         try
         {

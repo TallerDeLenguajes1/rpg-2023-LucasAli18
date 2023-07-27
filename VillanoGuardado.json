@@ -2,9 +2,8 @@
   "CantidadSoldados": 0,
   "Nombre": "Agustin",
   "Paises": [
-    "Peru",
-    "Bolivia"
+    "Paraguay"
   ],
   "CondicionParaGanar": 1,
-  "Turno": 2
+  "Turno": 3
 }

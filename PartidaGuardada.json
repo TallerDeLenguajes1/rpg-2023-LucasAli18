@@ -9,8 +9,9 @@
       "Paraguay",
       "Uruguay"
     ],
-    "Soldados": 0,
-    "duenio": null
+    "Soldados": 1,
+    "Capital": "Buenos Aires",
+    "duenio": "Lucas"
   },
   {
     "Id": 2,
@@ -26,7 +27,8 @@
       "Uruguay",
       "Venezuela"
     ],
-    "Soldados": 4,
+    "Soldados": 8,
+    "Capital": "Bras\u00EDlia",
     "duenio": "Lucas"
   },
   {
@@ -36,8 +38,9 @@
       "Brasil",
       "Guyana"
     ],
-    "Soldados": 0,
-    "duenio": null
+    "Soldados": 1,
+    "Capital": "Paramaribo",
+    "duenio": "Lucas"
   },
   {
     "Id": 4,
@@ -47,8 +50,9 @@
       "Bolivia",
       "Peru"
     ],
-    "Soldados": 0,
-    "duenio": null
+    "Soldados": 1,
+    "Capital": "Santiago",
+    "duenio": "Lucas"
   },
   {
     "Id": 5,
@@ -57,8 +61,9 @@
       "Colombia",
       "Peru"
     ],
-    "Soldados": 0,
-    "duenio": null
+    "Soldados": 1,
+    "Capital": "Quito",
+    "duenio": "Lucas"
   },
   {
     "Id": 6,
@@ -71,7 +76,8 @@
       "Peru"
     ],
     "Soldados": 1,
-    "duenio": "Agustin"
+    "Capital": "La Paz",
+    "duenio": "Lucas"
   },
   {
     "Id": 7,
@@ -81,8 +87,9 @@
       "Surinam",
       "Venezuela"
     ],
-    "Soldados": 0,
-    "duenio": null
+    "Soldados": 1,
+    "Capital": "George Town",
+    "duenio": "Lucas"
   },
   {
     "Id": 8,
@@ -94,8 +101,9 @@
       "Colombia",
       "Ecuador"
     ],
-    "Soldados": 4,
-    "duenio": "Agustin"
+    "Soldados": 1,
+    "Capital": "Lima",
+    "duenio": "Lucas"
   },
   {
     "Id": 9,
@@ -106,8 +114,9 @@
       "Venezuela",
       "Peru"
     ],
-    "Soldados": 0,
-    "duenio": null
+    "Soldados": 1,
+    "Capital": "Bogot\u00E1",
+    "duenio": "Lucas"
   },
   {
     "Id": 10,
@@ -117,8 +126,9 @@
       "Bolivia",
       "Brasil"
     ],
-    "Soldados": 0,
-    "duenio": null
+    "Soldados": 1,
+    "Capital": "Asunci\u00F3n",
+    "duenio": "Agustin"
   },
   {
     "Id": 11,
@@ -127,8 +137,9 @@
       "Argentina",
       "Brasil"
     ],
-    "Soldados": 0,
-    "duenio": null
+    "Soldados": 1,
+    "Capital": "Montevideo",
+    "duenio": "Lucas"
   },
   {
     "Id": 12,
@@ -137,7 +148,8 @@
       "Brasil",
       "Guyana"
     ],
-    "Soldados": 0,
-    "duenio": null
+    "Soldados": 1,
+    "Capital": "Capito",
+    "duenio": "Lucas"
   }
 ]

@@ -1,47 +1,20 @@
 using Personajes;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 using Limites;
 using PartidaJSON;
 using asciiArt;
+using API;
+using Menu;
 
 namespace Mecanicas
 {
     public class Mecanica
     {
-    List<string> paisesLibres=new List<string>{"Argentina","Brasil","Chile","Paraguay","Peru","Uruguay","Bolivia","Ecuador","Guyana","Colombia","Venezuela","Surinam"};
-    List<string> paisesOcupados=new List<string>();
-    public Personaje ComenzarJuego()
-    {
-        //CADA JUGADOR EMPEZARA CON 11 SOLDADOS Y DEBERA ESCOGER UN PAIS INICIAL
-        //LA IDEA DEL JUEGO ES EVITAR QUE EL VILLANO SE QUEDE CON TODA SUDAMERICA
-        //GANA LA PRIMERA PERSONA EN OBTENER TODOS LOS PAISES, O LA PERSONA QUE TENGA MAS PAISES CONQUISTADOS
-        Console.WriteLine("Escribir el nombre del personaje");
-        string nombrePj=Console.ReadLine()!;
-        Personaje jugador1 = new Personaje(nombrePj);
-        Console.WriteLine("***************************************************");
-        Console.WriteLine("*                BIENVENIDO A SHARPTEG            *");
-        Console.WriteLine("***************************************************");
-        Console.WriteLine();
-        Console.WriteLine("EMPEZARAS CON 3 SOLDADOS");
-        Console.WriteLine("DEBERÁS ESCOGER UN PAÍS INICIAL PARA COMENZAR TU CONQUISTA");
-        Console.WriteLine();
-        Console.WriteLine("EL OBJETIVO DEL JUEGO ES EVITAR QUE EL VILLANO SE QUEDE CON TODA SUDAMÉRICA");
-        Console.WriteLine("DEBERÁS FORMAR UN EJÉRCITO Y ESTRATEGIAS PARA LOGRARLO");
-        Console.WriteLine();
-        Console.WriteLine("GANA LA PRIMERA PERSONA EN OBTENER TODOS LOS PAÍSES");
-        Console.WriteLine("O LA PRIMERA PERSONA QUE DEJA AL RIVAL SIN PAISES");
-        Console.WriteLine();
-        Console.WriteLine("¡PREPÁRATE PARA LA BATALLA Y DEMUESTRA TU HABILIDAD COMO ESTRATEGA!");
-        Console.WriteLine();
-        Console.WriteLine("***************************************************");
-
-        jugador1.CantidadSoldados=0;
-        jugador1.CondicionParaGanar=0;
-        jugador1.Turno=0;
-        return jugador1;
-    }
-    public void TurnoRival(Personaje V, Personaje P, List<Pais> Paises)
+    HashSet<string> paisesLibres=new HashSet<string>{"Argentina","Brasil","Chile","Paraguay","Peru","Uruguay","Bolivia","Ecuador","Guyana","Colombia","Venezuela","Surinam"};
+    HashSet<string> paisesOcupados=new HashSet<string>();
+    public void TurnoRival(Personaje V, Personaje P, List<Pais> Paises,List<ApiClima.Clima> Climas)
     {
         //Primero seleccionar el pais incial
         Random num = new Random();
@@ -55,33 +28,36 @@ namespace Mecanicas
             }
             Paises[rand].duenio= V.Nombre;
             V.AgregarPais(Paises[rand].Nombre);
-            Console.WriteLine("El pais agregado es: "+V.Paises[0]);
+            Console.WriteLine("El pais agregado es: "+V.Paises![0]);
             V.CondicionParaGanar++;
         }else //Una vez pasado el primer turno comienza la hora de atacar
         {
-            AtaqueVillano(P, V, Paises);
+            AtaqueVillano(P, V, Paises, Climas);
         }
     }
-    public void Turno(Personaje P, Personaje V,List<Pais> Paises)
+    public void Turno(Personaje P, Personaje V,List<Pais> Paises,List<ApiClima.Clima> Climas)
     {
+        OpcionesMenu mostrar=new OpcionesMenu();
         Mecanica juego = new Mecanica();
         bool exit = false;
-
+        foreach (var pais in P.Paises!)
+            {
+                paisesOcupados.Add(pais);
+                paisesLibres.Remove(pais);
+            }
+            foreach (var pais in V.Paises!)
+            {
+                paisesOcupados.Add(pais);
+                paisesLibres.Remove(pais);
+            }    
             while (!exit)
             {
-                Console.WriteLine("***************************************************");
-                Console.WriteLine("*                 MENÚ DE OPCIONES                *");
-                Console.WriteLine("***************************************************");
-                Console.WriteLine();
-                Console.WriteLine("1. Seleccionar Pais de inicio");
-                Console.WriteLine("2. Atacar");
-                Console.WriteLine("3. Guardar Partida");
-                Console.WriteLine("4. Finalizar Turno");
-                Console.WriteLine();
-                Console.Write("Selecciona una opción: ");
-
+                if (P.CondicionParaGanar==12)
+                {
+                    return;
+                }
+                mostrar.MostrarMenuSecundario();
                 string? input = Console.ReadLine();
-
                 switch (input)
                 {
                     case "1":
@@ -134,7 +110,7 @@ namespace Mecanicas
                                     Console.WriteLine("No elegiste el pais de inicio");
                                 }else
                                 {
-                                    Ataque(P,V,Paises);
+                                    Ataque(P,V,Paises,Climas);
                                 }
                         break;
                     case "3":
@@ -145,23 +121,14 @@ namespace Mecanicas
                                         Console.WriteLine("No elegiste el pais de inicio");
                                     }else
                                     {
-                                        if (V.Turno==P.Turno)
-                                        {
-                                            PJguardado.GuardarPersonaje(P);
-                                            PJguardado.GuardarVillano(V);
-                                            guardado.GuardarPartida(Paises);
-                                            Console.WriteLine("¡PARTIDA GUARDADA!");
-                                        }else
-                                        {
                                         Console.WriteLine("Para evitar la ventaja contra el villano, debe realizar el ultimo ataque");
-                                        AtaqueVillano(P,V,Paises);
+                                        AtaqueVillano(P,V,Paises, Climas);
                                         Console.WriteLine("Y cargar los soldados que desea");
                                         FindelTurno(P,V,Paises);
                                         PJguardado.GuardarPersonaje(P);
                                         PJguardado.GuardarVillano(V);
                                         guardado.GuardarPartida(Paises);
                                         Console.WriteLine("¡PARTIDA GUARDADA!");
-                                        }
                                         P.CantidadSoldados=100;
                                         exit=true;
                                     }
@@ -188,22 +155,22 @@ namespace Mecanicas
     {
         int cantidadCarga=0;
         string? paisElegido;
-        if (P.Paises.Count()>1)
+        if (P.Paises!.Count()>1)
         {
             Console.WriteLine(P.Nombre+" tienes "+P.CantidadSoldados+" soldados para agregar.");
 
-            Console.WriteLine("Tenemos una lista de los paises obtenidos con los limites para poder pasar los soldados");
-            foreach (var pais in P.Paises)
+            Console.WriteLine("Tenemos una lista de los paises obtenidos para poder agregar los soldados");
+            Console.WriteLine();
+            foreach (var pais in P.Paises!)
             {
-                Console.WriteLine("El pais que tenes es "+pais);
+                Console.WriteLine("El pais conquistado es "+pais);
                 Console.WriteLine();
             }
             //ELEGIMOS EL PAIS DEL CUAL PASAMOS LOS SOLDADOS
             do
             {
                 Console.WriteLine("Elegir el pais en el cual agregar soldados");
-                paisElegido=Console.ReadLine();
-                //FALTA VERIFICAR QUE TENGA SOLDADOS SUFICIENTES
+                paisElegido=ElegirPais(Paises);
             } while (Paises.Find(pais=>pais.Nombre==paisElegido)!.duenio!=P.Nombre);
             do
             {
@@ -213,10 +180,7 @@ namespace Mecanicas
                 int.TryParse(Console.ReadLine(),out cantidadCarga);
             } while ((P.CantidadSoldados-cantidadCarga)<0);
             Paises.Find(pais=>pais.Nombre==paisElegido)!.Soldados+=cantidadCarga;
-            //RESTO LOS SOLDADOS
             P.CantidadSoldados=P.CantidadSoldados-cantidadCarga;
-            //PREGUNTO SI DESEA SEGUIR AGREGANDO
-            
             if (P.CantidadSoldados==0)
             {
                 Console.WriteLine("Colocaste todos los que tenias");
@@ -244,7 +208,7 @@ namespace Mecanicas
                 Console.WriteLine("No tienes ningun soldado");
             }else
             {
-                    Paises.Find(pais=>pais.Nombre==P.Paises[0])!.Soldados+=P.CantidadSoldados;
+                    Paises.Find(pais=>pais.Nombre==P.Paises![0])!.Soldados+=P.CantidadSoldados;
                     P.CantidadSoldados = 0;
             }
         }
@@ -281,22 +245,27 @@ namespace Mecanicas
         
     }
 
-    public void Ataque(Personaje P,Personaje V, List<Pais> Paises)
+    public void Ataque(Personaje P,Personaje V, List<Pais> Paises, List<ApiClima.Clima> Climas)
     {
         int atacar;
+        if (P.CondicionParaGanar==12)
+        {
+            return;
+        }
         Console.WriteLine("Desea atacar?");
         Console.WriteLine("1.Si 2.No");
         int.TryParse(Console.ReadLine(),out atacar);
         if (atacar == 2)
         {
-            Console.WriteLine("Termino tu turno");
+            Console.WriteLine("Termino tu ataque");
         }else
         {
         string paisAtaque;
         string paisDefensa;
         Console.WriteLine("RECUERDA QUE DEBE QUEDAR POR LO MENOS UN SOLDADO EN EL PAIS");
+        Console.WriteLine("RECUERDA QUE AL ATACAR UN PAIS CON TEMPERATURAS HELADAS PIERDES UN SOLDADO");
         Console.WriteLine("Tenemos una lista de los paises obtenidos con los limites para poder pensar el ataque");
-        foreach (var pais in P.Paises)
+        foreach (var pais in P.Paises!)
         {
             Console.WriteLine("El pais "+Paises.Find(p=>p.Nombre==pais)!.Nombre);
             Console.WriteLine("El pais tiene "+Paises.Find(p=>p.Nombre==pais)!.Soldados+" soldados.");
@@ -308,7 +277,7 @@ namespace Mecanicas
         }
         Console.WriteLine("AHORA LOS PAISES ENEMIGOS: ");
         Console.WriteLine();
-        foreach (var pais in V.Paises)
+        foreach (var pais in V.Paises!)
         {
             Console.WriteLine("El pais "+Paises.Find(p=>p.Nombre==pais)!.Nombre);
             Console.WriteLine("El pais tiene "+Paises.Find(p=>p.Nombre==pais)!.Soldados+" soldados.");
@@ -319,11 +288,12 @@ namespace Mecanicas
             Console.WriteLine();
         }
         Console.WriteLine();
+        Console.WriteLine("-----------------------ELECCION DEL PAIS DESDE EL CUAL VAMOS A ATACAR------------------------");
         do
         {
+            Console.WriteLine("-----------------------------------------------------------------------------");
             Console.WriteLine("Si la pregunta se repite significa que el pais no es de su propiedad o no posee soldados suficientes");
             Console.WriteLine("Elegir el pais desde el cual desea atacar");
-            //paisAtaque=Console.ReadLine()!;
             paisAtaque=ElegirPais(Paises);
             if (Paises.Find(pais=>pais.Nombre==paisAtaque)!.duenio==P.Nombre && Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados<1)
             {
@@ -335,25 +305,64 @@ namespace Mecanicas
                 Console.WriteLine("No puedes atacar si tienes 1 soldado.");
                 return;
             }
+           
         } while (Paises.Find(pais=>pais.Nombre==paisAtaque)!.duenio!=P.Nombre);
-        
+        Console.WriteLine("--------------------------------------------------------------------------------------");
         //VERIFICO SI EL PAIS A ATACAR ES LIMITE
         do
         {
+            Console.WriteLine("-----------------------ELECCION DEL PAIS A CONQUISTAR------------------------");
             Console.WriteLine("Si la pregunta se repite significa que el pais no es limite de sus propiedades");
             Console.WriteLine("Elegir el pais al cual desea atacar");
-            //paisDefensa=Console.ReadLine()!;
             paisDefensa=ElegirPais(Paises);
-        } while (!Paises[Paises.FindIndex(p=>p.Nombre==paisAtaque)].PaisesLimitrofes.Contains(paisDefensa));
-
-        int cantidadSoldadosPaisAtaque=Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados;
-        int cantidadSoldadosPaisDefensa=Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados;
-        
+            if (P.Paises.Contains(paisDefensa))
+            {
+                int opcion;
+                while (P.Paises.Contains(paisDefensa))
+                {
+                    Console.WriteLine("El pais que elegiste es tuyo, selecciona otro");
+                    Console.WriteLine("Tienes mas paises para atacar desde este pais?");
+                    Console.WriteLine("1.SI 2.NO");
+                    int.TryParse(Console.ReadLine(),out opcion);
+                    if (opcion==2)
+                    {
+                        return;
+                    }
+                    paisDefensa=ElegirPais(Paises);
+                }
+            }
+            
+        } while (!Paises[Paises.FindIndex(p=>p.Nombre==paisAtaque)].PaisesLimitrofes.Contains(paisDefensa));   
+        Console.WriteLine("--------------------------------------------------------------------------------------");
         //VERIFICO SI EL PAIS NO TIENE DUEÑO
         if (paisesLibres.Contains(paisDefensa))
         {
+            int continuar,verTemp;
+            verTemp=VerificarTemperatura(paisDefensa,Paises,Climas);
+            if (verTemp==0 && Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados>2)
+            {
+                Console.WriteLine("MALAS NOTICIAS");
+                Console.WriteLine("EL PAIS QUE DESEA CONQUISTAR ESTA PASANDO POR UN CLIMA FRIO, PERDERAS 1 SOLDADO");
+                Console.WriteLine("DESEAS CONTINUAR?");
+                Console.WriteLine("1.SI 2.NO");
+                int.TryParse(Console.ReadLine(),out continuar);
+                if (continuar == 1)
+                {
+                    Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
+                }
+            }else if(verTemp==1){
+                Console.WriteLine("Hermoso dia para conquistar un pais");
+            }else
+            {
+                Console.WriteLine("No puedes conquistar este pais debido al clima y la cantidad de soldados, espera al otro turno");
+                return;
+            }
+            Console.WriteLine("ENHORABUENA, EL PAIS ELEGIDO PARA CONQUISTAR NO TIENE DUEÑO");
+            dibujos ganaste = new dibujos();
+            ganaste.victoria();
+            Console.WriteLine("-----------TRASPASO DE SOLDADOS AL NUEVO PAIS----------");
             int agregar;
-            Console.WriteLine("En "+paisAtaque+" tienes "+cantidadSoldadosPaisAtaque+" soldados");
+            Console.WriteLine("En "+paisAtaque+" tienes "+Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados+" soldados");
             Console.WriteLine("Cuantos deseas agregar a "+paisDefensa);
             int.TryParse(Console.ReadLine(),out agregar);
             //VERIFICO QUE NO SE EXCEDA DE LA CANTIDAD DE SOLDADOS QUE POSEE
@@ -361,6 +370,7 @@ namespace Mecanicas
             {
                 Console.WriteLine("Cuantos deseas agregar a "+paisDefensa);
                 int.TryParse(Console.ReadLine(),out agregar);
+                Console.WriteLine();
             }
             //GUARDAR PAIS EN NOMBRE DEL JUGADOR Y AGREGAR UN SOLDADO
             Paises.Find(pais=>pais.Nombre==paisDefensa)!.duenio=P.Nombre;
@@ -371,486 +381,381 @@ namespace Mecanicas
             paisesOcupados.Add(paisDefensa);
             paisesLibres.Remove(paisDefensa);
             P.CondicionParaGanar++;
-            
+            Console.WriteLine("--------------------------------------------------------------");
         }else
         {
-            //VERIFICO SI EL PAIS ELEGIDO ES MIO O NO
-            if (P.Paises.Contains(paisDefensa))
-            {   //BUSCO UN PAIS CUYO DUEÑO SEA EL VILLANO
-                while (Paises.Find(pais=>pais.Nombre==paisDefensa)!.duenio!=V.Nombre)
-                {
-                    Console.WriteLine("El pais que elegiste es tuyo, selecciona otro");
-                    paisDefensa=ElegirPais(Paises);
-                }   
-            }
-            Console.WriteLine(paisDefensa+" pais de "+V.Nombre+" tiene "+Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados+" soldados");
-            Console.WriteLine(paisAtaque+" pais de "+P.Nombre+" tiene "+Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados+" soldados");
+                    //VERIFICO SI EL PAIS ELEGIDO ES MIO O NO
+  
+                    int eleccion,verificarTemp;
+                    //VERIFICO LA TEMPERATURA
+                    verificarTemp=VerificarTemperatura(paisDefensa,Paises,Climas);
+                    
+                    if (verificarTemp==0)
+                    {
+                        if (Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados>2)
+                        {
+                            Console.WriteLine("El ataque es en un pais helado, perderas un soldado en el camino deseas continuar?");
+                            Console.WriteLine("Deseas seguir?");
+                            Console.WriteLine("1.SI 2.NO");
+                            int.TryParse(Console.ReadLine(),out eleccion);
+                            if (eleccion==1)
+                            {
+                                Console.WriteLine("Haz elegido continuar se perdio un soldado pero el ataque continua");
+                                Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
+                                Console.WriteLine(paisDefensa+" pais de "+V.Nombre+" tiene "+Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados+" soldados");
+                                Console.WriteLine(paisAtaque+" pais de "+P.Nombre+" tiene "+Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados+" soldados");
+                                AtaqueDados(P, V, Paises, paisAtaque, paisDefensa);
+                                return;
+                            }else{return;}
+                        }else
+                        {
+                            Console.WriteLine("No posees los soldados suficientes para atacar un pais helado");
+                            return;
+                        }
+                    }   
+
+            
+            Console.WriteLine(paisAtaque+" pais de "+P.Nombre+" tiene "+(Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-1)+" soldados");
+            Console.WriteLine(paisDefensa+" pais de "+V.Nombre+" tiene "+Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados+" soldados");
             Console.WriteLine("Desea atacar?");
             Console.WriteLine("1.Si 2.No");
             int opcion;
             int.TryParse(Console.ReadLine(),out opcion);
-            if (opcion==1)
-            {
-                Random dado = new Random();
-                int dadoAtaque1,dadoAtaque2,dadoAtaque3,dadoDefensa1,dadoDefensa2,dadoDefensa3;
-                if (Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados>3)
-                {
-                    
-                    Console.WriteLine("El ataque sera con tres dados");
-                    if (Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados>2)
-                    {
-                            //ATAQUE CON 3 DADOS DEFENSA DE 3 DADOS
-                            dadoAtaque1 = dado.Next(1,7);
-                            dadoAtaque2 = dado.Next(1,7);
-                            dadoAtaque3 = dado.Next(1,7);
-                            dadoDefensa1 = dado.Next(1,7);
-                            dadoDefensa2 = dado.Next(1,7);
-                            dadoDefensa3 = dado.Next(1,7);
-                            //ORDENO DE MAYOR A MENOR ATAQUE
-                            int[] valoresAtaque = { dadoAtaque1, dadoAtaque2, dadoAtaque3 };
-                            Array.Sort(valoresAtaque);
-                            Array.Reverse(valoresAtaque);
-                            int[] valoresDefensa = { dadoDefensa1, dadoDefensa2, dadoDefensa3 };
-                            Array.Sort(valoresDefensa);
-                            Array.Reverse(valoresDefensa);
-                            Console.WriteLine("COMENZAMOS CON EL ATAQUE DE "+P.Nombre.ToUpper());
-                            for (int i = 0; i < 3; i++)
-                            {
-                                Console.WriteLine("RONDA NUMERO "+i+1);
-                                Console.WriteLine("El primer dado es....");
-                                Console.WriteLine(dado.Next(1,7));
-                                Console.WriteLine("Sigue girando....");
-                                Console.WriteLine(dado.Next(1,7));
-                                Thread.Sleep(2000);
-                                Console.WriteLine("....");
-                                Thread.Sleep(3000);
-                                Console.WriteLine(valoresAtaque[i]);
-                                Thread.Sleep(1000);
-                                Console.WriteLine("COMENZAMOS CON LA DEFENSA DE "+V.Nombre.ToUpper());
-                                Console.WriteLine("Y el dado defensor es....");
-                                Thread.Sleep(1000);
-                                Console.WriteLine("....");
-                                Thread.Sleep(1000);
-                                Console.WriteLine("....");
-                                Thread.Sleep(1000);
-                                Console.WriteLine(valoresDefensa[i]);
-                                Thread.Sleep(1000);
-                                if (valoresAtaque[i]<=valoresDefensa[i])
-                                {
-                                    Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
-                                }else
-                                {
-                                    Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                                }
-                            }
-
-                    }else if (Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados>1)
-                    {
-                        dadoAtaque1 = dado.Next(1,7);
-                        dadoAtaque2 = dado.Next(1,7);
-                        dadoAtaque3 = dado.Next(1,7);
-                        dadoDefensa2 = dado.Next(1,7);
-                        dadoDefensa3 = dado.Next(1,7);
-                        int[] valoresAtaque = { dadoAtaque1, dadoAtaque2, dadoAtaque3 };
-                        Array.Sort(valoresAtaque);
-                        Array.Reverse(valoresAtaque);
-                        int[] valoresDefensa = { dadoDefensa2,dadoDefensa3};
-                        Array.Sort(valoresDefensa);
-                        Array.Reverse(valoresDefensa);
-                        Console.WriteLine("COMENZAMOS CON EL ATAQUE DE "+P.Nombre.ToUpper());
-                        for (int i = 0; i < 2; i++)
-                        {
-                            Console.WriteLine("RONDA NUMERO "+i+1);
-                            Console.WriteLine("El primer dado es....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Console.WriteLine("Sigue girando....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Thread.Sleep(2000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(3000);
-                            Console.WriteLine(valoresAtaque[i]);
-                            Thread.Sleep(1000);
-                            Console.WriteLine("COMENZAMOS CON LA DEFENSA DE "+V.Nombre.ToUpper());
-                            Console.WriteLine("Y el dado defensor es....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine(valoresDefensa[i]);
-                            Thread.Sleep(1000);
-                            if (valoresAtaque[i]<=valoresDefensa[i])
-                            {
-                                Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
-                            }else
-                            {
-                                Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                            }
+                    if (opcion == 1){
+                        AtaqueDados(P, V, Paises, paisAtaque, paisDefensa);
                         }
+        }
+        }
+    }
 
-                    }else
+    private static void AtaqueDados(Personaje P, Personaje V, List<Pais> Paises, string paisAtaque, string paisDefensa)
+        {
+            Random dado = new Random();
+            int dadoAtaque1, dadoAtaque2, dadoAtaque3, dadoDefensa1, dadoDefensa2, dadoDefensa3;
+            dadoAtaque1 = dado.Next(1, 7);
+            dadoAtaque2 = dado.Next(1, 7);
+            dadoAtaque3 = dado.Next(1, 7);
+            dadoDefensa1 = dado.Next(1, 7);
+            dadoDefensa2 = dado.Next(1, 7);
+            dadoDefensa3 = dado.Next(1, 7);
+            if (Paises.Find(pais => pais.Nombre == paisAtaque)!.Soldados > 3)
+            {
+                Console.WriteLine("--------EL ATAQUE SERA CON TRES DADOS-------------");
+                if (Paises.Find(pais => pais.Nombre == paisDefensa)!.Soldados > 2)
+                {
+                    int[] valoresAtaque = { dadoAtaque1, dadoAtaque2, dadoAtaque3 };
+                    Array.Sort(valoresAtaque);
+                    Array.Reverse(valoresAtaque);
+                    int[] valoresDefensa = { dadoDefensa1, dadoDefensa2, dadoDefensa3 };
+                    Array.Sort(valoresDefensa);
+                    Array.Reverse(valoresDefensa);
+                    Console.WriteLine("--------DEFIENDE CON TRES DADOS-------------");
+                    for (int i = 0; i < 3; i++)
                     {
-                        dadoAtaque1 = dado.Next(1,7);
-                        dadoAtaque2 = dado.Next(1,7);
-                        dadoAtaque3 = dado.Next(1,7);
-                        dadoDefensa3 = dado.Next(1,7);
-                        Console.WriteLine("COMENZAMOS CON EL ATAQUE DE "+P.Nombre.ToUpper());
-                        if(dadoAtaque1>dadoDefensa3)
+                        Thread.Sleep(2000);
+                        Console.WriteLine("RONDA NUMERO " + (i+1));
+                        Console.WriteLine("COMENZAMOS CON EL ATAQUE DE " + P.Nombre!.ToUpper());
+                        Console.WriteLine("El dado atacante es....");
+                        GiroDelDado(dado);
+                        Console.WriteLine(valoresAtaque[i]);
+                        Thread.Sleep(1000);
+                        Console.WriteLine("COMENZAMOS CON LA DEFENSA DE " + V.Nombre!.ToUpper());
+                        Console.WriteLine("El dado defensor es....");
+                        GiroDelDado(dado);
+                        Console.WriteLine(valoresDefensa[i]);
+                        if (valoresAtaque[i] <= valoresDefensa[i])
                         {
-                            Console.WriteLine("RONDA NUMERO 1");
-                            Console.WriteLine("El primer dado es....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Console.WriteLine("Sigue girando....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Thread.Sleep(2000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(3000);
-                            Console.WriteLine(dadoAtaque1);
-                            Thread.Sleep(1000);
-                            Console.WriteLine("COMENZAMOS CON LA DEFENSA DE "+V.Nombre.ToUpper());
-                            Console.WriteLine("Y el dado defensor es....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine(dadoDefensa3);
-                            Thread.Sleep(1000);
-                            Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                            Console.WriteLine("El enemigo fue derrotado");
-                        }else if (dadoAtaque2>dadoDefensa3)
+                            Paises.Find(pais => pais.Nombre == paisAtaque)!.Soldados -= 1;
+                        }
+                        else
                         {
-                            Console.WriteLine("RONDA NUMERO 2");
-                            Console.WriteLine("El dado del defensor es: "+dadoDefensa3);
-                            Console.WriteLine("El segundo dado es....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Console.WriteLine("Sigue girando....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Thread.Sleep(2000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(3000);
-                            Console.WriteLine(dadoAtaque2);
-                            Thread.Sleep(1000);
-                            Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                            Console.WriteLine("El enemigo fue derrotado");
-                        }else if(dadoAtaque3>dadoDefensa3)
-                        {
-                            Console.WriteLine("RONDA NUMERO 3");
-                            Console.WriteLine("El dado del defensor es: "+dadoDefensa3);
-                            Console.WriteLine("El tercer dado es....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Console.WriteLine("Sigue girando....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Thread.Sleep(2000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(3000);
-                            Console.WriteLine(dadoAtaque2);
-                            Thread.Sleep(1000);
-                            Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                            Console.WriteLine("El enemigo fue derrotado");
-                        }else
-                        {
-                            Console.WriteLine("COMENZAMOS CON EL ATAQUE DE "+P.Nombre.ToUpper());
-                            Console.WriteLine("RONDA NUMERO 1");
-                            Console.WriteLine("El primer dado es....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Console.WriteLine("Sigue girando....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Thread.Sleep(2000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(3000);
-                            Console.WriteLine(dadoAtaque1);
-                            Thread.Sleep(1000);
-                            Console.WriteLine("El segundo dado es....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Console.WriteLine("Sigue girando....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Thread.Sleep(2000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(3000);
-                            Console.WriteLine(dadoAtaque2);
-                            Thread.Sleep(1000);
-                            Console.WriteLine("El tercer dado es....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Console.WriteLine("Sigue girando....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Thread.Sleep(2000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(3000);
-                            Console.WriteLine(dadoAtaque3);
-                            Thread.Sleep(1000);
-                            Console.WriteLine("COMENZAMOS CON LA DEFENSA DE "+V.Nombre.ToUpper());
-                            Console.WriteLine("Y el dado defensor es....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine(dadoDefensa3);
-                            Thread.Sleep(1000);
-                            Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
-                            Console.WriteLine("El enemigo gano esta vez, no te des por vencido");
+                            Paises.Find(pais => pais.Nombre == paisDefensa)!.Soldados -= 1;
                         }
                     }
-
-                }else if (Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados>2)
+                    Console.WriteLine("---------FIN DEL ATAQUE--------------");
+                }
+                else if (Paises.Find(pais => pais.Nombre == paisDefensa)!.Soldados > 1)
                 {
-                    Console.WriteLine("El ataque sera con dos dados");
-                    //ATAQUE CON 2 SOLDADOS
-                    if (Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados>2)
+                    Console.WriteLine("--------DEFIENDE CON DOS DADOS-------------");
+                    int[] valoresAtaque = { dadoAtaque1, dadoAtaque2, dadoAtaque3 };
+                    Array.Sort(valoresAtaque);
+                    Array.Reverse(valoresAtaque);
+                    int[] valoresDefensa = { dadoDefensa2, dadoDefensa3 };
+                    Array.Sort(valoresDefensa);
+                    Array.Reverse(valoresDefensa);
+                    Console.WriteLine("COMENZAMOS CON EL ATAQUE DE " + P.Nombre!.ToUpper());
+                    for (int i = 0; i < 2; i++)
                     {
-                        //DADO 1 MENOR ATAQUE
-                        dadoAtaque2 = dado.Next(1,7);
-                        dadoAtaque3 = dado.Next(1,7);
-                        dadoDefensa1 = dado.Next(1,7);
-                        dadoDefensa2 = dado.Next(1,7);
-                        dadoDefensa3 = dado.Next(1,7);
-                        //ORDENO DE MAYOR A MENOR ATAQUE
-                        int[] valoresAtaque = {dadoAtaque2, dadoAtaque3 };
-                        Array.Sort(valoresAtaque);
-                        Array.Reverse(valoresAtaque);
-                        int[] valoresDefensa = { dadoDefensa1, dadoDefensa2, dadoDefensa3 };
-                        Array.Sort(valoresDefensa);
-                        Array.Reverse(valoresDefensa);
-                        Console.WriteLine("COMENZAMOS CON EL ATAQUE DE "+P.Nombre.ToUpper());                        
-                        for (int i = 0; i < 2; i++)
-                        {
-                            Console.WriteLine("RONDA NUMERO "+(i+1));
-                            Console.WriteLine("El primer dado es....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Console.WriteLine("Sigue girando....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Thread.Sleep(2000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(3000);
-                            Console.WriteLine(valoresAtaque[i]);
-                            Thread.Sleep(1000);
-                            Console.WriteLine("COMENZAMOS CON LA DEFENSA DE "+V.Nombre.ToUpper());
-                            Console.WriteLine("Y el dado defensor es....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine(valoresDefensa[i]);
-                            Thread.Sleep(1000);
-                            if (valoresAtaque[i]<=valoresDefensa[i])
-                            {
-                                Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
-                            }else
-                            {
-                                Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                            }
-                        }
-
-                    }else if (Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados>1)
-                    {
-                        dadoAtaque2 = dado.Next(1,7);
-                        dadoAtaque3 = dado.Next(1,7);
-                        dadoDefensa2 = dado.Next(1,7);
-                        dadoDefensa3 = dado.Next(1,7);
-                        int[] valoresAtaque = { dadoAtaque2, dadoAtaque3 };
-                        Array.Sort(valoresAtaque);
-                        Array.Reverse(valoresAtaque);
-                        int[] valoresDefensa = { dadoDefensa2,dadoDefensa3};
-                        Array.Sort(valoresDefensa);
-                        Array.Reverse(valoresDefensa);
-                        Console.WriteLine("COMENZAMOS CON EL ATAQUE DE "+P.Nombre.ToUpper());
-                        for (int i = 0; i < 2; i++)
-                        {
-                            Console.WriteLine("RONDA NUMERO "+(i+1));
-                            Console.WriteLine("El primer dado es....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Console.WriteLine("Sigue girando....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Thread.Sleep(2000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(3000);
-                            Console.WriteLine(valoresAtaque[i]);
-                            Thread.Sleep(1000);
-                            Console.WriteLine("COMENZAMOS CON LA DEFENSA DE "+V.Nombre.ToUpper());
-                            Console.WriteLine("Y el dado defensor es....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine(valoresDefensa[i]);
-                            Thread.Sleep(1000);
-                            if (valoresAtaque[i]<=valoresDefensa[i])
-                            {
-                                Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
-                            }else
-                            {
-                                Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                            }
-                        }
-
-                    }else
-                    {
-                        dadoAtaque2 = dado.Next(1,7);
-                        dadoAtaque3 = dado.Next(1,7);
-                        dadoDefensa3 = dado.Next(1,7);
-                        Console.WriteLine("COMENZAMOS CON EL ATAQUE DE "+P.Nombre.ToUpper());
+                        Console.WriteLine("RONDA NUMERO " + (i+1));
                         Console.WriteLine("El primer dado es....");
-                        Thread.Sleep(2000);
+                        GiroDelDado(dado);
+                        Thread.Sleep(3000);
+                        Console.WriteLine(valoresAtaque[i]);
+                        Thread.Sleep(1000);
+                        Console.WriteLine("COMENZAMOS CON LA DEFENSA DE " + V.Nombre!.ToUpper());
+                        Console.WriteLine("Y el dado defensor es....");
+                        GiroDelDado(dado);
+                        Console.WriteLine(valoresDefensa[i]);
+                        if (valoresAtaque[i] <= valoresDefensa[i])
+                        {
+                            Paises.Find(pais => pais.Nombre == paisAtaque)!.Soldados -= 1;
+                        }
+                        else
+                        {
+                            Paises.Find(pais => pais.Nombre == paisDefensa)!.Soldados -= 1;
+                        }
+                    }
+                    Console.WriteLine("---------FIN DEL ATAQUE--------------");
+                }
+                else
+                {
+                    Console.WriteLine("--------DEFIENDE CON UN DADOS-------------");
+                    Console.WriteLine("COMENZAMOS CON EL ATAQUE DE " + P.Nombre!.ToUpper());
+                    if (dadoAtaque1 > dadoDefensa3)
+                    {
+                        Console.WriteLine("RONDA NUMERO 1");
+                        Console.WriteLine("El primer dado es....");
+                        GiroDelDado(dado);
+                        Console.WriteLine(dadoAtaque1);
+                        Thread.Sleep(1000);
+                        Console.WriteLine("COMENZAMOS CON LA DEFENSA DE " + V.Nombre!.ToUpper());
+                        Console.WriteLine("Y el dado defensor es....");
+                        GiroDelDado(dado);
+                        Console.WriteLine(dadoDefensa3);
+                        Paises.Find(pais => pais.Nombre == paisDefensa)!.Soldados -= 1;
+                    }
+                    else if (dadoAtaque2 > dadoDefensa3)
+                    {
+                        Console.WriteLine("El defensor atacante perdio la ronda 1, comenzamos con la segunda");
+                        Console.WriteLine("RONDA NUMERO 2");
+                        Console.WriteLine("El dado del defensor es: " + dadoDefensa3);
+                        Console.WriteLine("El segundo dado del atacante es....");
+                        GiroDelDado(dado);
+                        Console.WriteLine(dadoAtaque2);
+                        Paises.Find(pais => pais.Nombre == paisDefensa)!.Soldados -= 1;
+                    }
+                    else if (dadoAtaque3 > dadoDefensa3)
+                    {
+                        Console.WriteLine("El defensor atacante perdio la ronda 1 y 2, ahora se define");
+                        Console.WriteLine("RONDA NUMERO 3");
+                        Console.WriteLine("El dado del defensor es: " + dadoDefensa3);
+                        Console.WriteLine("El tercer dado es....");
+                        GiroDelDado(dado);
+                        Console.WriteLine(dadoAtaque2);
+                        Paises.Find(pais => pais.Nombre == paisDefensa)!.Soldados -= 1;
+                    }
+                    else
+                    {
+                        Console.WriteLine("COMENZAMOS CON EL ATAQUE DE " + P.Nombre.ToUpper());
+                        Console.WriteLine("RONDA NUMERO 1");
+                        Console.WriteLine("El primer dado es....");
+                        GiroDelDado(dado);
+                        Console.WriteLine(dadoAtaque1);
+                        Thread.Sleep(1000);
+                        Console.WriteLine("El segundo dado es....");
+                        GiroDelDado(dado);
                         Console.WriteLine(dadoAtaque2);
                         Thread.Sleep(1000);
-                        Console.WriteLine("COMENZAMOS CON LA DEFENSA DE "+V.Nombre.ToUpper());
+                        Console.WriteLine("El tercer dado es....");
+                        GiroDelDado(dado);
+                        Console.WriteLine(dadoAtaque3);
+                        Thread.Sleep(1000);
+                        Console.WriteLine("COMENZAMOS CON LA DEFENSA DE " + V.Nombre!.ToUpper());
                         Console.WriteLine("Y el dado defensor es....");
-                        Thread.Sleep(1000);
-                        Console.WriteLine("....");
-                        Thread.Sleep(1000);
-                        Console.WriteLine("....");
-                        Thread.Sleep(1000);
+                        GiroDelDado(dado);
                         Console.WriteLine(dadoDefensa3);
-                        Thread.Sleep(1000);
-                        if(dadoAtaque2>dadoDefensa3)
-                        {
-                            Thread.Sleep(1000);
-                            Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                            Console.WriteLine("El enemigo fue derrotado");
-                        }else if (dadoAtaque3>dadoDefensa3)
-                        {
-                            Console.WriteLine("El segundo dado es....");
-                            Thread.Sleep(2000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine(dadoAtaque3);
-                            Thread.Sleep(2000);
-                            Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
-                            Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                            Console.WriteLine("El enemigo fue derrotado");
-                        }else
-                        {
-                            Thread.Sleep(2000);
-                            Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
-                            Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
-                            Console.WriteLine("El enemigo gano esta vez, no te des por vencido");
-                        }
+                        Paises.Find(pais => pais.Nombre == paisAtaque)!.Soldados -= 1;
                     }
-
-                }else if (Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados>1)
-                {
-                    Console.WriteLine("El ataque sera con un dado");
-                    //ATAQUE CON 1 SOLDADOS
-                    if (Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados>2)
-                    {
-                        Console.WriteLine("El defensa utiliza 3 dados");
-                        dadoAtaque3 = dado.Next(1,7);
-                        dadoDefensa1 = dado.Next(1,7);
-                        dadoDefensa2 = dado.Next(1,7);
-                        dadoDefensa3 = dado.Next(1,7);
-                        //ORDENO DE MAYOR A MENOR ATAQUE
-                        int[] valoresDefensa = { dadoDefensa1, dadoDefensa2, dadoDefensa3 };
-                        Array.Sort(valoresDefensa);
-                        Array.Reverse(valoresDefensa);
-                        Console.WriteLine("COMENZAMOS CON EL ATAQUE DE "+P.Nombre.ToUpper());
-                        Console.WriteLine("El valor del dado atacante es....");
-                        Thread.Sleep(2000);
-                        dadoAtaque3 = dado.Next(1,7);
-                        Console.WriteLine(dadoAtaque3);
-                        Console.WriteLine("Sigue girando....");
-                        Thread.Sleep(1000);
-                        dadoAtaque3 = dado.Next(1,7);
-                        Console.WriteLine(dadoAtaque3);
-                        Console.WriteLine("Sigue girando....");
-                        Console.WriteLine("Final....");
-                        Thread.Sleep(1000);
-                        dadoAtaque3 = dado.Next(1,7);
-                        Console.WriteLine(dadoAtaque3);
-                        for (int i = 0; i < 3; i++)
-                        {
-                            Console.WriteLine("El valor del dado defensor es....");
-                            Thread.Sleep(2000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Console.WriteLine(valoresDefensa[i]);
-
-                            if (dadoAtaque3<=valoresDefensa[i])
-                            {
-                                Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
-                                Console.WriteLine("Perdiste");
-                                break;
-                            }else
-                            {
-                                Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                            }
-                        }
-
-                    }else if (Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados>1)
-                    {
-                        dadoAtaque3 = dado.Next(1,7);
-                        dadoDefensa2 = dado.Next(1,7);
-                        dadoDefensa3 = dado.Next(1,7);
-                        int[] valoresDefensa = { dadoDefensa2,dadoDefensa3};
-                        Array.Sort(valoresDefensa);
-                        Array.Reverse(valoresDefensa);
-                        Console.WriteLine("COMENZAMOS CON EL ATAQUE DE "+P.Nombre.ToUpper());
-                        Console.WriteLine("El valor del dado atacante es....");
-                        Thread.Sleep(2000);
-                        dadoAtaque3 = dado.Next(1,7);
-                        Console.WriteLine(dadoAtaque3);
-                        Console.WriteLine("Sigue girando....");
-                        Thread.Sleep(1000);
-                        dadoAtaque3 = dado.Next(1,7);
-                        Console.WriteLine(dadoAtaque3);
-                        Console.WriteLine("Sigue girando....");
-                        Console.WriteLine("Final....");
-                        Thread.Sleep(1000);
-                        dadoAtaque3 = dado.Next(1,7);
-                        Console.WriteLine(dadoAtaque3);
-                        for (int i = 0; i < 2; i++)
-                        {
-                            Console.WriteLine("El valor del dado defensor es....");
-                            Thread.Sleep(2000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Console.WriteLine(valoresDefensa[i]);
-                            if (dadoAtaque3<=valoresDefensa[i])
-                            {
-                                Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
-                                break;
-                            }else
-                            {
-                                Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                            }
-                        }
-
-                    }else
-                    {
-                        dadoAtaque3 = dado.Next(1,7);
-                        dadoDefensa3 = dado.Next(1,7);
-                        Console.WriteLine("COMENZAMOS CON EL ATAQUE DE "+P.Nombre.ToUpper());
-                        Console.WriteLine("El valor del dado es....");
-                        Thread.Sleep(2000);
-                        Console.WriteLine(dadoAtaque3);
-                        Console.WriteLine("Y el dado defensor es....");
-                        Console.WriteLine("....");
-                        Console.WriteLine("....");
-                        Thread.Sleep(1000);
-                        Console.WriteLine(dadoDefensa3);
-                        if (dadoAtaque3>dadoDefensa3)
-                        {
-                            Console.WriteLine("El enemigo fue derrotado");
-                            Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                        }else
-                        {
-                            Console.WriteLine("El enemigo gano esta vez, no te des por vencido");
-                            Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
-                        }
-                    }
+                    Console.WriteLine("---------FIN DEL ATAQUE--------------");
                 }
+            }
+            else if (Paises.Find(pais => pais.Nombre == paisAtaque)!.Soldados > 2)
+            {
+                Console.WriteLine("--------EL ATAQUE SERA CON DOS DADOS-------------");
+                //ATAQUE CON 2 SOLDADOS
+                if (Paises.Find(pais => pais.Nombre == paisDefensa)!.Soldados > 2)
+                {
+                    //ORDENO DE MAYOR A MENOR ATAQUE
+                    int[] valoresAtaque = { dadoAtaque2, dadoAtaque3 };
+                    Array.Sort(valoresAtaque);
+                    Array.Reverse(valoresAtaque);
+                    int[] valoresDefensa = { dadoDefensa1, dadoDefensa2, dadoDefensa3 };
+                    Array.Sort(valoresDefensa);
+                    Array.Reverse(valoresDefensa);
+                    Console.WriteLine("COMENZAMOS CON EL ATAQUE DE " + P.Nombre!.ToUpper());
+                    Console.WriteLine("--------DEFIENDE CON TRES DADOS-------------");
+                    for (int i = 0; i < 2; i++)
+                    {
+                        Console.WriteLine("RONDA NUMERO " + (i + 1));
+                        Console.WriteLine("El dado atacante es....");
+                        GiroDelDado(dado);
+                        Console.WriteLine(valoresAtaque[i]);
+                        Thread.Sleep(1000);
+                        Console.WriteLine("COMENZAMOS CON LA DEFENSA DE " + V.Nombre!.ToUpper());
+                        Console.WriteLine("Y el dado defensor es....");
+                        GiroDelDado(dado);
+                        Console.WriteLine(valoresDefensa[i]);
+                        if (valoresAtaque[i] <= valoresDefensa[i])
+                        {
+                            Paises.Find(pais => pais.Nombre == paisAtaque)!.Soldados -= 1;
+                        }
+                        else
+                        {
+                            Paises.Find(pais => pais.Nombre == paisDefensa)!.Soldados -= 1;
+                        }
+                    }
+                    Console.WriteLine("---------FIN DEL ATAQUE--------------");
+                }
+                else if (Paises.Find(pais => pais.Nombre == paisDefensa)!.Soldados > 1)
+                {
+                    int[] valoresAtaque = { dadoAtaque2, dadoAtaque3 };
+                    Array.Sort(valoresAtaque);
+                    Array.Reverse(valoresAtaque);
+                    int[] valoresDefensa = { dadoDefensa2, dadoDefensa3 };
+                    Array.Sort(valoresDefensa);
+                    Array.Reverse(valoresDefensa);
+                    Console.WriteLine("COMENZAMOS CON EL ATAQUE DE " + P.Nombre!.ToUpper());
+                    Console.WriteLine("--------DEFIENDE CON DOS DADOS-------------");
+                    for (int i = 0; i < 2; i++)
+                    {
+                        Console.WriteLine("RONDA NUMERO " + (i + 1));
+                        Console.WriteLine("El dado atacante es....");
+                        GiroDelDado(dado);
+                        Console.WriteLine(valoresAtaque[i]);
+                        Thread.Sleep(1000);
+                        Console.WriteLine("COMENZAMOS CON LA DEFENSA DE " + V.Nombre!.ToUpper());
+                        Console.WriteLine("Y el dado defensor es....");
+                        GiroDelDado(dado);
+                        Console.WriteLine(valoresDefensa[i]);
+                        if (valoresAtaque[i] <= valoresDefensa[i])
+                        {
+                            Paises.Find(pais => pais.Nombre == paisAtaque)!.Soldados -= 1;
+                        }
+                        else
+                        {
+                            Paises.Find(pais => pais.Nombre == paisDefensa)!.Soldados -= 1;
+                        }
+                    }
+                    Console.WriteLine("---------FIN DEL ATAQUE--------------");
+                }
+                else
+                {
+                    Console.WriteLine("--------DEFIENDE CON UN DADO-------------");
+                    Console.WriteLine("COMENZAMOS CON EL ATAQUE DE " + P.Nombre!.ToUpper());
+                    Console.WriteLine("El primer dado es....");
+                    GiroDelDado(dado);
+                    Console.WriteLine(dadoAtaque2);
+                    Thread.Sleep(1000);
+                    Console.WriteLine("COMENZAMOS CON LA DEFENSA DE " + V.Nombre!.ToUpper());
+                    Console.WriteLine("Y el dado defensor es....");
+                    GiroDelDado(dado);
+                    Console.WriteLine(dadoDefensa3);
+                    if (dadoAtaque2 > dadoDefensa3)
+                    {
+                        Thread.Sleep(1000);
+                        Paises.Find(pais => pais.Nombre == paisDefensa)!.Soldados -= 1;
+                    }
+                    else if (dadoAtaque3 > dadoDefensa3)
+                    {
+                        Console.WriteLine("El segundo dado es....");
+                        GiroDelDado(dado);
+                        Console.WriteLine(dadoAtaque3);
+                        Paises.Find(pais => pais.Nombre == paisAtaque)!.Soldados -= 1;
+                        Paises.Find(pais => pais.Nombre == paisDefensa)!.Soldados -= 1;
+                    }
+                    else
+                    {
+                        Paises.Find(pais => pais.Nombre == paisAtaque)!.Soldados -= 1;
+                        Paises.Find(pais => pais.Nombre == paisAtaque)!.Soldados -= 1;
+                    }
+                    Console.WriteLine("---------FIN DEL ATAQUE--------------");
+                }
+            }
+            else if (Paises.Find(pais => pais.Nombre == paisAtaque)!.Soldados > 1)
+            {
+                Console.WriteLine("------EL ATAQUE SERA CON UN SOLO DADO-------");
+                //ATAQUE CON 1 SOLDADOS
+                if (Paises.Find(pais => pais.Nombre == paisDefensa)!.Soldados > 2)
+                {
+                    Console.WriteLine("--------DEFIENDE CON TRES DADOS-------------");
+                    //ORDENO DE MAYOR A MENOR ATAQUE
+                    int[] valoresDefensa = { dadoDefensa1, dadoDefensa2, dadoDefensa3 };
+                    Array.Sort(valoresDefensa);
+                    Array.Reverse(valoresDefensa);
+                    Console.WriteLine("COMENZAMOS CON EL ATAQUE DE " + P.Nombre!.ToUpper());
+                    Console.WriteLine("El valor del dado atacante es....");
+                    GiroDelDado(dado);
+                    Console.WriteLine(dadoAtaque3);
+                    for (int i = 0; i < 3; i++)
+                    {
+                        Console.WriteLine("El valor del dado defensor es....");
+                        GiroDelDado(dado);
+                        Console.WriteLine(valoresDefensa[i]);
 
+                        if (dadoAtaque3 <= valoresDefensa[i])
+                        {
+                            Paises.Find(pais => pais.Nombre == paisAtaque)!.Soldados -= 1;
+                            break;
+                        }
+                        else
+                        {
+                            Paises.Find(pais => pais.Nombre == paisDefensa)!.Soldados -= 1;
+                        }
+                    }
+                    Console.WriteLine("---------FIN DEL ATAQUE--------------");
+                }
+                else if (Paises.Find(pais => pais.Nombre == paisDefensa)!.Soldados > 1)
+                {
+                    int[] valoresDefensa = { dadoDefensa2, dadoDefensa3 };
+                    Array.Sort(valoresDefensa);
+                    Array.Reverse(valoresDefensa);
+                    Console.WriteLine("--------DEFIENDE CON DOS DADOS-------------");
+                    Console.WriteLine("COMENZAMOS CON EL ATAQUE DE " + P.Nombre!.ToUpper());
+                    Console.WriteLine("El valor del dado atacante es....");
+                    GiroDelDado(dado);
+                    Console.WriteLine(dadoAtaque3);
+                    for (int i = 0; i < 2; i++)
+                    {
+                        Console.WriteLine("El valor del dado defensor es....");
+                        GiroDelDado(dado);
+                        Console.WriteLine(valoresDefensa[i]);
+                        if (dadoAtaque3 <= valoresDefensa[i])
+                        {
+                            Paises.Find(pais => pais.Nombre == paisAtaque)!.Soldados -= 1;
+                            break;
+                        }
+                        else
+                        {
+                            Paises.Find(pais => pais.Nombre == paisDefensa)!.Soldados -= 1;
+                        }
+                    }
+                    Console.WriteLine("---------FIN DEL ATAQUE--------------");
+                }
+                else
+                {
+                    Console.WriteLine("--------DEFIENDE CON UN DADOS-------------");
+                    Console.WriteLine("COMENZAMOS CON EL ATAQUE DE " + P.Nombre!.ToUpper());
+                    Console.WriteLine("El valor del dado atacante es....");
+                    GiroDelDado(dado);
+                    Console.WriteLine(dadoAtaque3);
+                    Console.WriteLine("Y el dado defensor es....");
+                    GiroDelDado(dado);
+                    Console.WriteLine(dadoDefensa3);
+                    if (dadoAtaque3 > dadoDefensa3)
+                    {
+                        Paises.Find(pais => pais.Nombre == paisDefensa)!.Soldados -= 1;
+                    }
+                    else
+                    {
+                        Paises.Find(pais => pais.Nombre == paisAtaque)!.Soldados -= 1;
+                    }
+                    Console.WriteLine("---------FIN DEL ATAQUE--------------");
+                }
             }
             if (Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados==0)
                         {
                             Console.WriteLine("El pais defensor perdio la guerra.");
-                            Console.WriteLine(P.Nombre.ToUpper()+" HA GANADO LA GUERRA Y CONQUISTO "+Paises.Find(pais=>pais.Nombre==paisDefensa)!.Nombre);
+                            Console.WriteLine(P.Nombre!.ToUpper()+" HA GANADO LA GUERRA Y CONQUISTO "+Paises.Find(pais=>pais.Nombre==paisDefensa)!.Nombre);
                             Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
                             Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados+=1;
                             Paises.Find(pais=>pais.Nombre==paisDefensa)!.duenio = P.Nombre;
@@ -863,20 +768,51 @@ namespace Mecanicas
                         {
                             Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados=1;
                             Console.WriteLine("El pais atacante perdio la guerra.");
-                            Console.WriteLine(P.Nombre.ToUpper()+" HA PERDIDO LA GUERRA");
+                            Console.WriteLine(P.Nombre!.ToUpper()+" HA PERDIDO LA GUERRA");
+                            return;
+                        }else
+                        {
+                            Console.WriteLine("El equipo de "+P.Nombre+" quedo con "+Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados+" soldados.");
+                            Console.WriteLine("El equipo de "+V.Nombre+" quedo con "+Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados+" soldados.");
                             return;
                         }
         }
+
+    private static void GiroDelDado(Random dado)
+        {
+            Console.WriteLine(dado.Next(1, 7));
+            Console.WriteLine("Sigue girando....");
+            Console.WriteLine(dado.Next(1, 7));
+            Thread.Sleep(2000);
+            Console.WriteLine("Sigue...");
+            Console.WriteLine(dado.Next(1, 7));
+            Console.WriteLine("....");
+            Thread.Sleep(1500);
+            Console.WriteLine(dado.Next(1, 7));
+            Console.WriteLine("....");
+            Thread.Sleep(1000);
+            Console.WriteLine("....");
+            Thread.Sleep(3000);
         }
-    }
-    public void AtaqueVillano(Personaje P, Personaje V, List<Pais> Paises)
+
+    public void AtaqueVillano(Personaje P, Personaje V, List<Pais> Paises, List<ApiClima.Clima> Climas)
     {
             Random num = new Random();
-            int rand, lim;
+            int rand, lim,verificarSoldados=0;
             //PRIMERO SELECCIONA UN PAIS DESDE EL CUAL ATACA
             rand = num.Next(0,12);
-            //FALTA LA OPCION CUANDO NO TENGA PAIS CON MAS DE 1 SOLDADO
-            //FALTA LA FUNCION DE AGREGAR PAIS
+            foreach (var pais in V.Paises!)
+            {
+                if (Paises.Find(p=>p.Nombre==pais)!.Soldados==1)
+                {
+                    verificarSoldados++; //SABER SI TIENE PAISES PARA ATACAR
+                }
+            }
+            if (verificarSoldados==V.Paises.Count())
+            {
+                Console.WriteLine("El villano no pudo realizar un ataque debido a la falta de soldados");
+                return;
+            }
             while (Paises[rand].duenio!=V.Nombre)
             {
                 rand = num.Next(0,12);
@@ -888,516 +824,85 @@ namespace Mecanicas
             //BUSCAMOS UN PAIS PARA ATACAR DENTRO DE LOS LIMITES DEL PAIS DE ATAQUE
             lim = num.Next(0,Paises[rand].PaisesLimitrofes.Count());
             string paisAtaque=Paises[rand].Nombre;
-            Console.WriteLine("PAIS ATAQUE "+paisAtaque);
             string paisDefensa= Paises[rand].PaisesLimitrofes[lim];
+            int bandera=0;
+            //verificar si los paises limitrofes son del villano
+            Console.WriteLine("-----------------COMIENZA EL ATAQUE----------------------------");
+            //VERIFICO SI TIENE POSIBILIDAD DE ATAQUE
+            if (V.Paises.Contains(paisDefensa))
+            {
+                foreach (var pais in V.Paises)
+                {
+                    paisAtaque=pais;
+                    Console.WriteLine(paisAtaque+" es el pais ataque");
+                    if (Paises.Find(p=>p.Nombre==paisAtaque)!.Soldados<2)
+                    {
+                        Console.WriteLine(Paises.Find(p=>p.Nombre==paisAtaque)!.Nombre+" tiene menos de 2 soldados");
+                    }else
+                    {
+                        for (int i = 0; i < (Paises.Find(p=>p.Nombre==paisAtaque)!.PaisesLimitrofes.Count()-1); i++)
+                        {
+                            if (V.Paises.Contains(Paises.Find(p=>p.Nombre==paisAtaque)!.PaisesLimitrofes[i]))
+                            {
+                                Console.WriteLine(Paises.Find(p=>p.Nombre==paisAtaque)!.PaisesLimitrofes[i]+" esta contenido");
+                            }else
+                            {
+                                paisDefensa=Paises.Find(p=>p.Nombre==paisAtaque)!.PaisesLimitrofes[i];
+                                bandera=100;
+                                break;
+                            }
+                        }
+                    }
+                    if (bandera==100)
+                    {
+                        break;
+                    }
+                    bandera++;
+                }
+                if (bandera==V.Paises.Count())
+                {
+                    Console.WriteLine("El villano no tiene paises para realizar un ataque");
+                    return;
+                }
+            }
+            Console.WriteLine("PAIS ATAQUE "+paisAtaque);
             Console.WriteLine("PAIS DEFENSA "+paisDefensa);
+            int verTemperatura;
+            verTemperatura=VerificarTemperatura(paisDefensa,Paises,Climas);
+            if (verTemperatura==0 && Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados>2)
+            {
+                Console.WriteLine("El pais atacante perdio un soldado en el camino");
+                Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
+            }else if(verTemperatura==1){
+                Console.WriteLine("Un hermoso dia para ser conquistado :'(");
+            }else
+            {
+                Console.WriteLine("El villano no pudo conquistar el pais por el clima frio y la falta de soldados");
+                return;
+            }
             //PREGUNTAR SI EL PAIS SELECCIONADO ES DEL RIVAL
             if (Paises.Find(pais=>pais.Nombre==paisDefensa)!.duenio==P.Nombre)
             {
-                Console.WriteLine("COMIENZA EL ATAQUE DEL VILLANO "+V.Nombre.ToUpper()+" A "+P.Nombre.ToUpper());
-                Console.WriteLine("EL VILLANO ATACARA DESDE "+Paises[rand].Nombre+" QUE TIENE "+Paises[rand].Soldados);
-                ///
+                Console.WriteLine("COMIENZA EL ATAQUE DEL VILLANO "+V.Nombre!.ToUpper()+" A "+P.Nombre!.ToUpper());
+                Console.WriteLine("EL VILLANO ATACARA DESDE "+Paises[rand].Nombre+" QUE TIENE "+Paises[rand].Soldados+" soldados");
                 paisAtaque = Paises[rand].Nombre;
-                Random dado = new Random();
-                int dadoAtaque1,dadoAtaque2,dadoAtaque3,dadoDefensa1,dadoDefensa2,dadoDefensa3;
-                if (Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados>3)
-                {
-                    
-                    Console.WriteLine("El ataque sera con tres dados");
-                    Console.WriteLine("El defensa sera con "+Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados+" dados");
-                    if (Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados>2)
-                    {
-                            Console.WriteLine("Defensa con 3 soldados");
-                            //ATAQUE CON 3 DADOS DEFENSA DE 3 DADOS
-                            dadoAtaque1 = dado.Next(1,7);
-                            dadoAtaque2 = dado.Next(1,7);
-                            dadoAtaque3 = dado.Next(1,7);
-                            dadoDefensa1 = dado.Next(1,7);
-                            dadoDefensa2 = dado.Next(1,7);
-                            dadoDefensa3 = dado.Next(1,7);
-                            //ORDENO DE MAYOR A MENOR ATAQUE
-                            int[] valoresAtaque = { dadoAtaque1, dadoAtaque2, dadoAtaque3 };
-                            Array.Sort(valoresAtaque);
-                            Array.Reverse(valoresAtaque);
-                            int[] valoresDefensa = { dadoDefensa1, dadoDefensa2, dadoDefensa3 };
-                            Array.Sort(valoresDefensa);
-                            Array.Reverse(valoresDefensa);
-                            Console.WriteLine("COMENZAMOS CON EL ATAQUE DE "+V.Nombre.ToUpper());
-                            for (int i = 0; i < 3; i++)
-                            {
-                                Console.WriteLine("RONDA NUMERO "+(i+1));
-                                Console.WriteLine("El primer dado es....");
-                                Console.WriteLine(dado.Next(1,7));
-                                Console.WriteLine("Sigue girando....");
-                                Console.WriteLine(dado.Next(1,7));
-                                Thread.Sleep(2000);
-                                Console.WriteLine("....");
-                                Thread.Sleep(3000);
-                                Console.WriteLine(valoresAtaque[i]);
-                                Thread.Sleep(1000);
-                                Console.WriteLine("COMENZAMOS CON LA DEFENSA DE "+P.Nombre.ToUpper());
-                                Console.WriteLine("Y el dado defensor es....");
-                                Thread.Sleep(1000);
-                                Console.WriteLine("....");
-                                Thread.Sleep(1000);
-                                Console.WriteLine("....");
-                                Thread.Sleep(1000);
-                                Console.WriteLine(valoresDefensa[i]);
-                                Thread.Sleep(1000);
-                                if (valoresAtaque[i]<=valoresDefensa[i])
-                                {
-                                    Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
-                                }else
-                                {
-                                    Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                                }
-                            }
-
-                    }else if (Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados>1)
-                    {
-                        Console.WriteLine("Defensa con 2 soldados");
-                        dadoAtaque1 = dado.Next(1,7);
-                        dadoAtaque2 = dado.Next(1,7);
-                        dadoAtaque3 = dado.Next(1,7);
-                        dadoDefensa2 = dado.Next(1,7);
-                        dadoDefensa3 = dado.Next(1,7);
-                        int[] valoresAtaque = { dadoAtaque1, dadoAtaque2, dadoAtaque3 };
-                        Array.Sort(valoresAtaque);
-                        Array.Reverse(valoresAtaque);
-                        int[] valoresDefensa = { dadoDefensa2,dadoDefensa3};
-                        Array.Sort(valoresDefensa);
-                        Array.Reverse(valoresDefensa);
-                        Console.WriteLine("COMENZAMOS CON EL ATAQUE DE "+V.Nombre.ToUpper());
-                        for (int i = 0; i < 2; i++)
-                        {
-                            Console.WriteLine("RONDA NUMERO "+(i+1));
-                            Console.WriteLine("El primer dado es....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Console.WriteLine("Sigue girando....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Thread.Sleep(2000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(3000);
-                            Console.WriteLine(valoresAtaque[i]);
-                            Thread.Sleep(1000);
-                            Console.WriteLine("COMENZAMOS CON LA DEFENSA DE "+P.Nombre.ToUpper());
-                            Console.WriteLine("Y el dado defensor es....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine(valoresDefensa[i]);
-                            Thread.Sleep(1000);
-                            if (valoresAtaque[i]<=valoresDefensa[i])
-                            {
-                                Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
-                            }else
-                            {
-                                Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                            }
-                        }
-
-                    }else
-                    {
-                        Console.WriteLine("Defensa con 1 soldados");
-                        dadoAtaque1 = dado.Next(1,7);
-                        dadoAtaque2 = dado.Next(1,7);
-                        dadoAtaque3 = dado.Next(1,7);
-                        dadoDefensa3 = dado.Next(1,7);
-                        Console.WriteLine("COMENZAMOS CON EL ATAQUE DE "+V.Nombre.ToUpper());
-                        if(dadoAtaque1>dadoDefensa3)
-                        {
-                            Console.WriteLine("RONDA NUMERO 1");
-                            Console.WriteLine("El primer dado es....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Console.WriteLine("Sigue girando....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Thread.Sleep(2000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(3000);
-                            Console.WriteLine(dadoAtaque1);
-                            Thread.Sleep(1000);
-                            Console.WriteLine("COMENZAMOS CON LA DEFENSA DE "+P.Nombre.ToUpper());
-                            Console.WriteLine("Y el dado defensor es....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine(dadoDefensa3);
-                            Thread.Sleep(1000);
-                            Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                            Console.WriteLine("El enemigo fue derrotado");
-                        }else if (dadoAtaque2>dadoDefensa3)
-                        {
-                            Console.WriteLine("RONDA NUMERO 2");
-                            Console.WriteLine("El dado del defensor es: "+dadoDefensa3);
-                            Console.WriteLine("El segundo dado es....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Console.WriteLine("Sigue girando....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Thread.Sleep(2000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(3000);
-                            Console.WriteLine(dadoAtaque2);
-                            Thread.Sleep(1000);
-                            Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                            Console.WriteLine("El enemigo fue derrotado");
-                        }else if(dadoAtaque3>dadoDefensa3)
-                        {
-                            Console.WriteLine("RONDA NUMERO 3");
-                            Console.WriteLine("El dado del defensor es: "+dadoDefensa3);
-                            Console.WriteLine("El tercer dado es....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Console.WriteLine("Sigue girando....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Thread.Sleep(2000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(3000);
-                            Console.WriteLine(dadoAtaque2);
-                            Thread.Sleep(1000);
-                            Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                            Console.WriteLine("El enemigo fue derrotado");
-                        }else
-                        {
-                            Console.WriteLine("COMENZAMOS CON EL ATAQUE DE "+V.Nombre.ToUpper());
-                            Console.WriteLine("RONDA NUMERO 1");
-                            Console.WriteLine("El primer dado es....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Console.WriteLine("Sigue girando....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Thread.Sleep(2000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(3000);
-                            Console.WriteLine(dadoAtaque1);
-                            Thread.Sleep(1000);
-                            Console.WriteLine("El segundo dado es....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Console.WriteLine("Sigue girando....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Thread.Sleep(2000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(3000);
-                            Console.WriteLine(dadoAtaque2);
-                            Thread.Sleep(1000);
-                            Console.WriteLine("El tercer dado es....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Console.WriteLine("Sigue girando....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Thread.Sleep(2000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(3000);
-                            Console.WriteLine(dadoAtaque3);
-                            Thread.Sleep(1000);
-                            Console.WriteLine("COMENZAMOS CON LA DEFENSA DE "+P.Nombre.ToUpper());
-                            Console.WriteLine("Y el dado defensor es....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine(dadoDefensa3);
-                            Thread.Sleep(1000);
-                            Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
-                            Console.WriteLine("Ganaste, el enemigo no logro vencer tu ejercito");
-                        }
-                    }
-
-                }else if (Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados>2)
-                {
-                    Console.WriteLine("El ataque sera con dos dados");
-                    Console.WriteLine("El pais defensor "+Paises.Find(pais=>pais.Nombre==paisDefensa)!.Nombre+" tiene "+Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados+" soldados.");
-                    //ATAQUE CON 2 SOLDADOS
-                    if (Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados>2)
-                    {
-                        Console.WriteLine("Defensa con 3 soldados");
-                        //DADO 1 MENOR ATAQUE
-                        dadoAtaque2 = dado.Next(1,7);
-                        dadoAtaque3 = dado.Next(1,7);
-                        dadoDefensa1 = dado.Next(1,7);
-                        dadoDefensa2 = dado.Next(1,7);
-                        dadoDefensa3 = dado.Next(1,7);
-                        //ORDENO DE MAYOR A MENOR ATAQUE
-                        int[] valoresAtaque = {dadoAtaque2, dadoAtaque3 };
-                        Array.Sort(valoresAtaque);
-                        Array.Reverse(valoresAtaque);
-                        int[] valoresDefensa = { dadoDefensa1, dadoDefensa2, dadoDefensa3 };
-                        Array.Sort(valoresDefensa);
-                        Array.Reverse(valoresDefensa);
-                        Console.WriteLine("COMENZAMOS CON EL ATAQUE DE "+V.Nombre.ToUpper());                        
-                        for (int i = 0; i < 2; i++)
-                        {
-                            Console.WriteLine("RONDA NUMERO "+(i+1));
-                            Console.WriteLine("El primer dado es....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Console.WriteLine("Sigue girando....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Thread.Sleep(2000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(3000);
-                            Console.WriteLine(valoresAtaque[i]);
-                            Thread.Sleep(1000);
-                            Console.WriteLine("COMENZAMOS CON LA DEFENSA DE "+P.Nombre.ToUpper());
-                            Console.WriteLine("Y el dado defensor es....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine(valoresDefensa[i]);
-                            Thread.Sleep(1000);
-                            if (valoresAtaque[i]<=valoresDefensa[i])
-                            {
-                                Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
-                            }else
-                            {
-                                Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                            }
-                        }
-
-                    }else if (Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados>1)
-                    {
-                        Console.WriteLine("Defensa con 2 soldados");
-                        dadoAtaque2 = dado.Next(1,7);
-                        dadoAtaque3 = dado.Next(1,7);
-                        dadoDefensa2 = dado.Next(1,7);
-                        dadoDefensa3 = dado.Next(1,7);
-                        int[] valoresAtaque = { dadoAtaque2, dadoAtaque3 };
-                        Array.Sort(valoresAtaque);
-                        Array.Reverse(valoresAtaque);
-                        int[] valoresDefensa = { dadoDefensa2,dadoDefensa3};
-                        Array.Sort(valoresDefensa);
-                        Array.Reverse(valoresDefensa);
-                        Console.WriteLine("COMENZAMOS CON EL ATAQUE DE "+V.Nombre.ToUpper());
-                        for (int i = 0; i < 2; i++)
-                        {
-                            Console.WriteLine("RONDA NUMERO "+i+1);
-                            Console.WriteLine("El primer dado es....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Console.WriteLine("Sigue girando....");
-                            Console.WriteLine(dado.Next(1,7));
-                            Thread.Sleep(2000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(3000);
-                            Console.WriteLine(valoresAtaque[i]);
-                            Thread.Sleep(1000);
-                            Console.WriteLine("COMENZAMOS CON LA DEFENSA DE "+P.Nombre.ToUpper());
-                            Console.WriteLine("Y el dado defensor es....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine(valoresDefensa[i]);
-                            Thread.Sleep(1000);
-                            if (valoresAtaque[i]<=valoresDefensa[i])
-                            {
-                                Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
-                            }else
-                            {
-                                Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                            }
-                        }
-
-                    }else
-                    {
-                        Console.WriteLine("Defensa con 1 soldados");
-                        dadoAtaque2 = dado.Next(1,7);
-                        dadoAtaque3 = dado.Next(1,7);
-                        dadoDefensa3 = dado.Next(1,7);
-                        Console.WriteLine("COMENZAMOS CON EL ATAQUE DE "+V.Nombre.ToUpper());
-                        Console.WriteLine("El primer dado es....");
-                        Thread.Sleep(2000);
-                        Console.WriteLine(dadoAtaque2);
-                        Thread.Sleep(1000);
-                        Console.WriteLine("El segundo dado es....");
-                        Thread.Sleep(2000);
-                        Console.WriteLine("....");
-                        Thread.Sleep(1000);
-                        Console.WriteLine("....");
-                        Thread.Sleep(1000);
-                        Console.WriteLine(dadoAtaque3);
-                        Console.WriteLine("COMENZAMOS CON LA DEFENSA DE "+P.Nombre.ToUpper());
-                        Console.WriteLine("Y el dado defensor es....");
-                        Thread.Sleep(1000);
-                        Console.WriteLine("....");
-                        Thread.Sleep(1000);
-                        Console.WriteLine("....");
-                        Thread.Sleep(1000);
-                        Console.WriteLine(dadoDefensa3);
-                        Thread.Sleep(1000);
-                        //CAMBIAR POR UN FOR
-                        if(dadoAtaque2>dadoDefensa3)
-                        {
-                            Thread.Sleep(1000);
-                            Console.WriteLine("Fuiste derrotado");
-                            Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                        }else if (dadoAtaque3>dadoDefensa3)
-                        {
-                            Thread.Sleep(2000);
-                            Console.WriteLine("Fuiste derrotado");
-                            Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                        }else
-                        {
-                            Thread.Sleep(2000);
-                            Console.WriteLine("Ganaste, el enemigo no logro derrotar tu ejercito");
-                            Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados=1;
-                        }
-                    }
-
-                }else if (Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados>1)
-                {
-                    Console.WriteLine("El ataque sera con un dado");
-                    //ATAQUE CON 1 SOLDADOS
-                    if (Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados>2)
-                    {
-                        Console.WriteLine("El defensa utiliza 3 dados");
-                        dadoAtaque3 = dado.Next(1,7);
-                        dadoDefensa1 = dado.Next(1,7);
-                        dadoDefensa2 = dado.Next(1,7);
-                        dadoDefensa3 = dado.Next(1,7);
-                        //ORDENO DE MAYOR A MENOR ATAQUE
-                        int[] valoresDefensa = { dadoDefensa1, dadoDefensa2, dadoDefensa3 };
-                        Array.Sort(valoresDefensa);
-                        Array.Reverse(valoresDefensa);
-                        Console.WriteLine("COMENZAMOS CON EL ATAQUE DE "+V.Nombre.ToUpper());
-                        Console.WriteLine("El valor del dado atacante es....");
-                        Thread.Sleep(2000);
-                        dadoAtaque3 = dado.Next(1,7);
-                        Console.WriteLine(dadoAtaque3);
-                        Console.WriteLine("Sigue girando....");
-                        Thread.Sleep(1000);
-                        dadoAtaque3 = dado.Next(1,7);
-                        Console.WriteLine(dadoAtaque3);
-                        Console.WriteLine("Sigue girando....");
-                        Console.WriteLine("Final....");
-                        Thread.Sleep(1000);
-                        dadoAtaque3 = dado.Next(1,7);
-                        Console.WriteLine(dadoAtaque3);
-                        Console.WriteLine("COMENZAMOS CON LA DEFENSA DE "+P.Nombre.ToUpper());
-                        for (int i = 0; i < 3; i++)
-                        {
-                            Console.WriteLine("RONDA "+(i+1));
-                            Console.WriteLine("El valor del dado defensor es....");
-                            Thread.Sleep(2000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Console.WriteLine(valoresDefensa[i]);
-
-                            if (dadoAtaque3<=valoresDefensa[i])
-                            {
-                                Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
-                                Console.WriteLine("Ganaste, el rival no pudo matar tu ejercito");
-                                break;
-                            }else
-                            {
-                                Console.WriteLine("Perdiste, el rival derroto a tu ejercito");
-                                Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                            }
-                        }
-
-                    }else if (Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados>1)
-                    {
-                        Console.WriteLine("Defensa con 2 soldados");
-                        dadoAtaque3 = dado.Next(1,7);
-                        dadoDefensa2 = dado.Next(1,7);
-                        dadoDefensa3 = dado.Next(1,7);
-                        int[] valoresDefensa = { dadoDefensa2,dadoDefensa3};
-                        Array.Sort(valoresDefensa);
-                        Array.Reverse(valoresDefensa);
-                        Console.WriteLine("COMENZAMOS CON EL ATAQUE DE "+V.Nombre.ToUpper());
-                        Console.WriteLine("El valor del dado atacante es....");
-                        Thread.Sleep(2000);
-                        dadoAtaque3 = dado.Next(1,7);
-                        Console.WriteLine(dadoAtaque3);
-                        Console.WriteLine("Sigue girando....");
-                        Thread.Sleep(1000);
-                        dadoAtaque3 = dado.Next(1,7);
-                        Console.WriteLine(dadoAtaque3);
-                        Console.WriteLine("Sigue girando....");
-                        Console.WriteLine("Final....");
-                        Thread.Sleep(1000);
-                        dadoAtaque3 = dado.Next(1,7);
-                        Console.WriteLine(dadoAtaque3);
-                        for (int i = 0; i < 2; i++)
-                        {
-                            Console.WriteLine("El valor del dado defensor es....");
-                            Thread.Sleep(2000);
-                            Console.WriteLine("....");
-                            Thread.Sleep(1000);
-                            Console.WriteLine("....");
-                            Console.WriteLine(valoresDefensa[i]);
-                            if (dadoAtaque3<=valoresDefensa[i])
-                            {
-                                Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
-                                break;
-                            }else
-                            {
-                                Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                            }
-                        }
-
-                    }else
-                    {
-                        Console.WriteLine("Defensa con 1 soldados");
-                        dadoAtaque3 = dado.Next(1,7);
-                        dadoDefensa3 = dado.Next(1,7);
-                        Console.WriteLine("COMENZAMOS CON EL ATAQUE DE "+V.Nombre.ToUpper());
-                        Console.WriteLine("El valor del dado es....");
-                        Thread.Sleep(2000);
-                        Console.WriteLine(dadoAtaque3);
-                        Console.WriteLine("Y el dado defensor es....");
-                        Console.WriteLine("....");
-                        Console.WriteLine("....");
-                        Thread.Sleep(1000);
-                        Console.WriteLine(dadoDefensa3);
-                        if (dadoAtaque3>dadoDefensa3)
-                        {
-                            Console.WriteLine("Fuiste derrotado");
-                            Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados-=1;
-                        }else
-                        {
-                            Console.WriteLine("Ganaste, el enemigo no pudo conquistar tu pais");
-                            Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
-                        }
-                    }
-                }
-            if (Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados==0)
-                        {
-                            Console.WriteLine("El pais defensor perdio la guerra.");
-                            Console.WriteLine(V.Nombre.ToUpper()+"HA GANADO LA GUERRA Y CONQUISTO "+Paises.Find(pais=>pais.Nombre==paisDefensa)!.Nombre);
-                            Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
-                            Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados+=1;
-                            Paises.Find(pais=>pais.Nombre==paisDefensa)!.duenio = V.Nombre;
-                            V.CondicionParaGanar++;
-                            P.CondicionParaGanar--;
-                            V.AgregarPais(Paises.Find(pais=>pais.Nombre==paisDefensa)!.Nombre);
-                            P.BorrarPais(Paises.Find(pais=>pais.Nombre==paisDefensa)!.Nombre);
-                        }else if (Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados==1)
-                        {
-                            
-                            Console.WriteLine("El pais atacante perdio la guerra.");
-                            Console.WriteLine(V.Nombre.ToUpper()+" HA PERDIDO LA GUERRA");
-                        }
-    }else //EN EL CASO QUE EL PAIS NO TENGA DUEÑO
-    {
-            dibujos ganaste = new dibujos();
-            ganaste.victoria();
-            if (Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados>1)
+                AtaqueDados(V,P,Paises,paisAtaque,paisDefensa);
+            }else //EN EL CASO QUE EL PAIS NO TENGA DUEÑO
             {
-                Paises.Find(pais=>pais.Nombre==paisDefensa)!.duenio=V.Nombre;
-                V.AgregarPais(Paises.Find(pais=>pais.Nombre==paisDefensa)!.Nombre);
-                Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados+=1;
-                Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
-                paisesLibres.Remove(Paises.Find(pais=>pais.Nombre==paisDefensa)!.Nombre);
-                paisesOcupados.Add(Paises.Find(pais=>pais.Nombre==paisDefensa)!.Nombre);
-            }else
-            {
-                Console.WriteLine("El enemigo intento pero no puedo conquistar "+Paises.Find(pais=>pais.Nombre==paisDefensa)!.Nombre);
-            }   
-        
+                if (Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados>1)
+                {
+                    Console.WriteLine("El Villano conquisto un pais");
+                    Paises.Find(pais=>pais.Nombre==paisDefensa)!.duenio=V.Nombre;
+                    V.AgregarPais(Paises.Find(pais=>pais.Nombre==paisDefensa)!.Nombre);
+                    Paises.Find(pais=>pais.Nombre==paisDefensa)!.Soldados+=1;
+                    Paises.Find(pais=>pais.Nombre==paisAtaque)!.Soldados-=1;
+                    paisesLibres.Remove(Paises.Find(pais=>pais.Nombre==paisDefensa)!.Nombre);
+                    paisesOcupados.Add(Paises.Find(pais=>pais.Nombre==paisDefensa)!.Nombre);
+                    V.CondicionParaGanar++;
+                }else
+                {
+                    Console.WriteLine("El enemigo intento pero no puedo conquistar "+Paises.Find(pais=>pais.Nombre==paisDefensa)!.Nombre);
+                }    
     }
 }
     public string ElegirPais(List<Pais> Paises)
@@ -1416,24 +921,21 @@ namespace Mecanicas
                 {
                     if (sel >= 1 && sel <= Paises.Count)
                     {
-                        // El número ingresado es válido, se sale del bucle
                         break;
                     }
                 }
-
-                Console.WriteLine("Opción inválida. Por favor, ingrese un número válido.");
+                Console.WriteLine("Opción incorrecta. Por favor, ingrese un número válido.");
             } while (true);
-            
             return Paises.Find(pais=>pais.Id==sel)!.Nombre;
         }
     public void FindelTurno(Personaje P, Personaje V, List<Pais> Paises)
     {
         int villano=0,player=0;
-        foreach (var pais in P.Paises)
+        foreach (var pais in P.Paises!)
         {
             player++;
         }
-        foreach (var pais in V.Paises)
+        foreach (var pais in V.Paises!)
         {
             villano++;
         }
@@ -1441,16 +943,27 @@ namespace Mecanicas
         V.Turno++;
         P.CantidadSoldados=player;
         V.CantidadSoldados=villano;
+        Console.WriteLine("A "+P.Nombre+" le quedan "+Math.Abs(P.CondicionParaGanar-Paises.Count())+" paises para conquistar.");
+        Console.WriteLine("A "+V.Nombre+" le quedan "+Math.Abs(V.CondicionParaGanar-Paises.Count())+" paises para conquistar.");
         Console.WriteLine("A "+P.Nombre+" se le agrego "+player+" soldados.");
         Console.WriteLine("A "+V.Nombre+" se le agrego "+villano+" soldados.");
         CargarSoldados(P, Paises);
         CargarSoldadosRival(V, Paises);
-        //SUBIR LA CANTIDAD DE SOLADOS PARA EL PROXIMO TURNO DE ACUERDO A LA CANTIDAD DE PAISES QUE TIENE
-        /*Console.WriteLine("   O");
-          Console.WriteLine(" ¬/|\");
-          Console.WriteLine("  / \"); */
-    
     }
-
+    public int VerificarTemperatura(string paisElegir, List<Pais> Paises, List<ApiClima.Clima> Climas)
+    {
+        int verificar;
+        string capital=Paises.Find(pais=>pais.Nombre==paisElegir)!.Capital!;
+        Console.WriteLine("La capital de "+paisElegir+" es "+capital);
+        Console.WriteLine("La temperatura en la capital es de "+Climas.Find(pais=>pais.Ciudad==capital)!.Temperatura);
+        if (Climas.Find(pais=>pais.Ciudad==capital)!.Temperatura<=10)
+        {
+            verificar=0;
+        }else
+        {
+            verificar=1;
+        }
+        return verificar;
+    }
     }
 }
